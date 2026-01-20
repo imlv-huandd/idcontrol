@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ編集 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ecf0f1;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 30px;
+            background-color: #ecf0f1;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 1000px;
+        }
+
+        /* セクション */
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+        }
+
+        /* フォームエリア */
+        .form-area {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .form-group input:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* 所属ユーザーエリア */
+        .user-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .btn-add-user {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add-user:hover {
+            background-color: #229954;
+        }
+
+        /* テーブル */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .data-table th {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #dee2e6;
+            color: #2c3e50;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .admin-badge {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .btn-set-admin {
+            border-color: #3498db;
+            background-color: #ffffff;
+            color: #3498db;
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #3498db;
+            transition: background-color 0.2s;
+            word-break: keep-all;
+        }
+
+        .btn-set-admin:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-remove {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+            color: white;
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-remove:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        /* ボタンエリア */
+        .button-area {
+            display: flex;
+            gap: 10px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            margin-top: 30px;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+        }
+
+        /* モーダル（ユーザー検索ダイアログ） */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-backdrop.show {
+            display: block;
+        }
+
+        .modal-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #7f8c8d;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .modal-close:hover {
+            background-color: #f8f9fa;
+        }
+
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .search-area {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .search-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-search {
+            background-color: #3498db;
+            border-color: #3498db;
+            color: white;
+            padding: 8px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-search:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-clear {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
+            color: white;
+            padding: 8px 20px;
+            font-size: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-clear:hover {
+            background-color: #7f8c8d;
+        }
+
+        .search-result-area {
+            display: none;
+        }
+
+        .search-result-area.show {
+            display: block;
+        }
+
+        .result-count {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .btn-add-to-list {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            color: white;
+            padding: 4px 12px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-add-to-list:hover {
+            background-color: #229954;
+        }
+
+        .added-badge {
+            display: inline-block;
+            background-color: #95a5a6;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* モード切り替えボタン（デモ用） */
+        .mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+
+        .mode-toggle:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="content-header">
+            <h1 class="content-title" id="pageTitle">グループ新規登録</h1>
+        </div>
+
+        <div class="content-body">
+            <!-- 基本情報エリア -->
+            <div class="section">
+                <div class="form-area">
+                    <!-- グループ名 -->
+                    <div class="form-group">
+                        <label for="groupName">
+                            グループ名
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="groupName" 
+                            class="form-control" 
+                            placeholder="グループ名を入力してください"
+                            maxlength="100"
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- 所属ユーザーエリア -->
+            <div class="section">
+                <div class="user-list-header">
+                    <h2 class="section-title" style="margin-bottom: 0;">所属ユーザー</h2>
+                    <button type="button" class="btn-add-user" id="openUserSearchBtn">ユーザー追加</button>
+                </div>
+
+                <div id="userListArea">
+                    <!-- ユーザーが追加されていない場合 -->
+                    <div class="empty-message" id="emptyMessage">
+                        所属ユーザーが登録されていません。<br>
+                        「ユーザー追加」ボタンからユーザーを追加してください。
+                    </div>
+
+                    <!-- ユーザー一覧テーブル（非表示） -->
+                    <table class="data-table" id="userTable" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>ユーザー名</th>
+                                <th>メールアドレス</th>
+                                <th style="width: 120px;">管理者</th>
+                                <th style="width: 80px;">削除</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody">
+                            <!-- ユーザー行が動的に追加される -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ボタンエリア -->
+            <div class="button-area">
+                <button type="button" class="btn-primary" id="registerBtn">登録</button>
+                <button type="button" class="btn-primary" id="updateBtn" style="display: none;">更新</button>
+                <button type="button" class="btn-secondary" onclick="goBack()">キャンセル</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ユーザー検索ダイアログ -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title">ユーザー検索</h3>
+                <button type="button" class="modal-close" id="closeModalBtn">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- 検索条件エリア -->
+                <div class="search-area">
+                    <div class="search-row">
+                        <div class="form-group">
+                            <label for="searchUserName">ユーザー名</label>
+                            <input 
+                                type="text" 
+                                id="searchUserName" 
+                                class="form-control" 
+                                placeholder="ユーザー名で検索"
+                            >
+                        </div>
+                        <div class="form-group">
+                            <label for="searchMailAddress">メールアドレス</label>
+                            <input 
+                                type="text" 
+                                id="searchMailAddress" 
+                                class="form-control" 
+                                placeholder="メールアドレスで検索"
+                            >
+                        </div>
+                    </div>
+                    <div class="search-buttons">
+                        <button type="button" class="btn-search" id="searchBtn">検索</button>
+                        <button type="button" class="btn-clear" id="clearSearchBtn">クリア</button>
+                    </div>
+                </div>
+
+                <!-- 検索結果エリア -->
+                <div class="search-result-area" id="searchResultArea">
+                    <div class="result-count" id="resultCount">検索結果：0件</div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">追加</th>
+                                <th>ユーザー名</th>
+                                <th>メールアドレス</th>
+                            </tr>
+                        </thead>
+                        <tbody id="searchResultBody">
+                            <!-- 検索結果が動的に追加される -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- モード切り替えボタン（デモ用） -->
+    <button class="mode-toggle" onclick="toggleMode()">モード切替（デモ用）</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // グローバル変数
+        let isEditMode = false;
+        let groupUsers = []; // 所属ユーザーリスト
+        let adminUserId = null; // 管理者のユーザーID
+
+        // サンプルユーザーデータ
+        const sampleUsers = [
+            { id: 1, name: 'サンプル 太郎', email: 'sample1@example.com' },
+            { id: 2, name: 'サンプル 花子', email: 'sample2@example.com' },
+            { id: 3, name: 'サンプル 一郎', email: 'sample3@example.com' },
+            { id: 4, name: 'サンプル 次郎', email: 'sample4@example.com' },
+            { id: 5, name: 'サンプル 三郎', email: 'sample5@example.com' }
+        ];
+
+        // モーダル開閉
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const openUserSearchBtn = document.getElementById('openUserSearchBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        openUserSearchBtn.addEventListener('click', () => {
+            modalBackdrop.classList.add('show');
+            document.getElementById('searchResultArea').classList.remove('show');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modalBackdrop.classList.remove('show');
+        });
+
+        modalBackdrop.addEventListener('click', (e) => {
+            if (e.target === modalBackdrop) {
+                modalBackdrop.classList.remove('show');
+            }
+        });
+
+        // 検索ボタン
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const userName = document.getElementById('searchUserName').value.toLowerCase();
+            const mailAddress = document.getElementById('searchMailAddress').value.toLowerCase();
+
+            // 検索実行（部分一致）
+            const results = sampleUsers.filter(user => {
+                const matchName = !userName || user.name.toLowerCase().includes(userName);
+                const matchMail = !mailAddress || user.email.toLowerCase().includes(mailAddress);
+                return matchName && matchMail;
+            });
+
+            displaySearchResults(results);
+        });
+
+        // クリアボタン
+        document.getElementById('clearSearchBtn').addEventListener('click', () => {
+            document.getElementById('searchUserName').value = '';
+            document.getElementById('searchMailAddress').value = '';
+            document.getElementById('searchResultArea').classList.remove('show');
+        });
+
+        // 検索結果表示
+        function displaySearchResults(results) {
+            const resultArea = document.getElementById('searchResultArea');
+            const resultCount = document.getElementById('resultCount');
+            const resultBody = document.getElementById('searchResultBody');
+
+            resultCount.textContent = `検索結果：${results.length}件`;
+            resultBody.innerHTML = '';
+
+            if (results.length === 0) {
+                alert('検索条件に該当するユーザーが見つかりませんでした。（COM01003）');
+                resultArea.classList.remove('show');
+                return;
+            }
+
+            results.forEach(user => {
+                const row = document.createElement('tr');
+                const isAdded = groupUsers.some(u => u.id === user.id);
+
+                row.innerHTML = `
+                    <td>
+                        ${isAdded 
+                            ? '<span class="added-badge">追加済</span>' 
+                            : `<button type="button" class="btn-add-to-list" onclick="addUserToGroup(${user.id})">追加</button>`
+                        }
+                    </td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                `;
+                resultBody.appendChild(row);
+            });
+
+            resultArea.classList.add('show');
+        }
+
+        // ユーザーをグループに追加
+        function addUserToGroup(userId) {
+            const user = sampleUsers.find(u => u.id === userId);
+            if (!user || groupUsers.some(u => u.id === userId)) {
+                return;
+            }
+
+            groupUsers.push(user);
+            
+            // 管理者が未設定の場合、最初のユーザーを管理者に設定
+            if (adminUserId === null) {
+                adminUserId = userId;
+            }
+
+            updateUserTable();
+
+            // 検索結果を再表示（追加済み表示に更新）
+            const userName = document.getElementById('searchUserName').value.toLowerCase();
+            const mailAddress = document.getElementById('searchMailAddress').value.toLowerCase();
+            const results = sampleUsers.filter(user => {
+                const matchName = !userName || user.name.toLowerCase().includes(userName);
+                const matchMail = !mailAddress || user.email.toLowerCase().includes(mailAddress);
+                return matchName && matchMail;
+            });
+            displaySearchResults(results);
+        }
+
+        // ユーザーテーブル更新
+        function updateUserTable() {
+            const emptyMessage = document.getElementById('emptyMessage');
+            const userTable = document.getElementById('userTable');
+            const userTableBody = document.getElementById('userTableBody');
+
+            if (groupUsers.length === 0) {
+                emptyMessage.style.display = 'block';
+                userTable.style.display = 'none';
+                return;
+            }
+
+            emptyMessage.style.display = 'none';
+            userTable.style.display = 'table';
+            userTableBody.innerHTML = '';
+
+            // メールアドレス昇順でソート
+            const sortedUsers = [...groupUsers].sort((a, b) => 
+                a.email.localeCompare(b.email)
+            );
+
+            sortedUsers.forEach(user => {
+                const row = document.createElement('tr');
+                const isAdmin = user.id === adminUserId;
+
+                row.innerHTML = `
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>
+                        ${isAdmin 
+                            ? '<span class="admin-badge">管理者</span>' 
+                            : `<button type="button" class="btn-set-admin" onclick="setAdmin(${user.id})">管理者に設定</button>`
+                        }
+                    </td>
+                    <td>
+                        ${!isAdmin 
+                            ? `<button type="button" class="btn-remove" onclick="removeUser(${user.id})">削除</button>` 
+                            : ''
+                        }
+                    </td>
+                `;
+                userTableBody.appendChild(row);
+            });
+        }
+
+        // 管理者に設定
+        function setAdmin(userId) {
+            adminUserId = userId;
+            updateUserTable();
+        }
+
+        // ユーザー削除
+        function removeUser(userId) {
+            groupUsers = groupUsers.filter(u => u.id !== userId);
+            updateUserTable();
+        }
+
+        // キャンセルボタン
+        function goBack() {
+            if (confirm('入力内容が破棄されますがよろしいですか？（COM01008）')) {
+                alert('グループ検索画面に遷移します。');
+            }
+        }
+
+        // 登録ボタン
+        document.getElementById('registerBtn').addEventListener('click', () => {
+            const groupName = document.getElementById('groupName').value;
+
+            if (!groupName) {
+                alert('グループ名を入力してください。（COM02001）');
+                return;
+            }
+
+            if (groupName.length > 100) {
+                alert('グループ名は100文字以内で入力してください。（COM02003）');
+                return;
+            }
+
+            if (confirm('このグループを登録しますか？')) {
+                alert('登録しました。（COM01004）');
+                // 実際にはグループ検索画面に遷移
+            }
+        });
+
+        // 更新ボタン
+        document.getElementById('updateBtn').addEventListener('click', () => {
+            const groupName = document.getElementById('groupName').value;
+
+            if (!groupName) {
+                alert('グループ名を入力してください。（COM02001）');
+                return;
+            }
+
+            if (groupName.length > 100) {
+                alert('グループ名は100文字以内で入力してください。（COM02003）');
+                return;
+            }
+
+            if (confirm('このグループを更新しますか？')) {
+                alert('登録しました。（COM01004）');
+                // 実際にはグループ検索画面に遷移
+            }
+        });
+
+        // モード切替（デモ用）
+        function toggleMode() {
+            isEditMode = !isEditMode;
+            const pageTitle = document.getElementById('pageTitle');
+            const registerBtn = document.getElementById('registerBtn');
+            const updateBtn = document.getElementById('updateBtn');
+            const groupName = document.getElementById('groupName');
+
+            if (isEditMode) {
+                // 編集モード
+                pageTitle.textContent = 'グループ編集';
+                registerBtn.style.display = 'none';
+                updateBtn.style.display = 'inline-block';
+                
+                // サンプルデータを表示
+                groupName.value = '営業部グループ';
+                groupUsers = [
+                    { id: 1, name: 'サンプル 太郎', email: 'sample1@example.com' },
+                    { id: 2, name: 'サンプル 花子', email: 'sample2@example.com' }
+                ];
+                adminUserId = 1;
+                updateUserTable();
+            } else {
+                // 新規登録モード
+                pageTitle.textContent = 'グループ新規登録';
+                registerBtn.style.display = 'inline-block';
+                updateBtn.style.display = 'none';
+                
+                // フォームをクリア
+                groupName.value = '';
+                groupUsers = [];
+                adminUserId = null;
+                updateUserTable();
+            }
+        }
+    </script>
+</body>
+</html>

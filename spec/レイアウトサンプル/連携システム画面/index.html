@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>連携システム一覧</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .interface-row {
+            background-color: #f8f9fa;
+            border-left: 3px solid #dee2e6;
+        }
+        .interface-name {
+            padding-left: 3rem;
+        }
+        .system-row {
+            background-color: #ffffff;
+        }
+        .collapse-btn {
+            border: 1px solid #6c757d;
+            background: #ffffff;
+            padding: 2px 8px;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            line-height: 1;
+            color: #495057;
+            border-radius: 3px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .collapse-btn:hover {
+            background-color: #e9ecef;
+        }
+        .table-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">連携システム一覧</h5>
+            <button type="button" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> システム追加
+            </button>
+        </div>
+        <div class="card">
+            <div class="card-body p-0">
+                <div class="table-container">
+                    <table class="table table-hover mb-0">
+                        <tbody>
+                            <!-- システムA（連携元） -->
+                            <tr class="system-row">
+                                <td style="width: 50px;" class="text-center">
+                                    <button class="collapse-btn" data-bs-toggle="collapse" data-bs-target="#systemA-interfaces">
+                                        ＋
+                                    </button>
+                                </td>
+                                <td style="width: 300px;">
+                                    <strong>Create!Webフロー</strong>
+                                </td>
+                                <td style="width: 150px;">
+                                    <span class="badge bg-info">連携元</span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-plus"></i> インターフェイスの追加
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- システムAのインターフェイス（初期非表示） -->
+                            <tr class="interface-row collapse" id="systemA-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名A-1
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="interface-row collapse" id="systemA-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名A-2
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- システムC（連携元） -->
+                            <tr class="system-row">
+                                <td class="text-center">
+                                    <button class="collapse-btn" data-bs-toggle="collapse" data-bs-target="#systemC-interfaces">
+                                        ＋
+                                    </button>
+                                </td>
+                                <td>
+                                    <strong>OBic</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">連携元</span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-plus"></i> インターフェイスの追加
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- システムCのインターフェイス（初期非表示） -->
+                            <tr class="interface-row collapse" id="systemC-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名C-1
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- システムB（連携先） -->
+                            <tr class="system-row">
+                                <td class="text-center">
+                                    <button class="collapse-btn" data-bs-toggle="collapse" data-bs-target="#systemB-interfaces">
+                                        ＋
+                                    </button>
+                                </td>
+                                <td>
+                                    <strong>システム名B</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">連携先</span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-plus"></i> インターフェイスの追加
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- システムBのインターフェイス（初期非表示） -->
+                            <tr class="interface-row collapse" id="systemB-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名B-1
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- システムD（連携先） -->
+                            <tr class="system-row">
+                                <td class="text-center">
+                                    <button class="collapse-btn" data-bs-toggle="collapse" data-bs-target="#systemD-interfaces">
+                                        ＋
+                                    </button>
+                                </td>
+                                <td>
+                                    <strong>システム名D</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">連携先</span>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="bi bi-plus"></i> インターフェイスの追加
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- システムDのインターフェイス（初期非表示） -->
+                            <tr class="interface-row collapse" id="systemD-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名D-1
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="interface-row collapse" id="systemD-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名D-2
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr class="interface-row collapse" id="systemD-interfaces">
+                                <td></td>
+                                <td colspan="2" class="interface-name">
+                                    インターフェイス名D-3
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1">
+                                        <i class="bi bi-pencil"></i> 変更
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i> 削除
+                                    </button>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 折り畳みボタンの＋、−切り替え
+        document.querySelectorAll('.collapse-btn').forEach(btn => {
+            const target = document.querySelector(btn.getAttribute('data-bs-target'));
+            
+            btn.addEventListener('click', function() {
+                if (this.textContent.trim() === '＋') {
+                    this.textContent = '−';
+                } else {
+                    this.textContent = '＋';
+                }
+            });
+        });
+
+        // 削除ボタンの確認ダイアログ
+        document.querySelectorAll('.btn-outline-danger').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                if (!confirm('削除してもよろしいですか?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

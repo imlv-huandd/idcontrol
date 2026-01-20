@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ID管理システム - 基本レイアウト</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 60px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        /* サイドメニュー */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 90;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .menu-category {
+            margin-bottom: 5px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-icon {
+            transition: transform 0.2s;
+        }
+
+        .category-header.expanded .category-icon {
+            transform: rotate(90deg);
+        }
+
+        .menu-items {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-items.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-item a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            margin-top: 60px;
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-description {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* スクロールバーのスタイル */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-button" id="menuToggle" title="メニュー表示切替">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="header-right">
+                <button class="icon-button" id="fullscreenToggle" title="全画面切替">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
+                <div class="user-name" id="userName">山田 太郎</div>
+            </div>
+        </header>
+
+        <!-- サイドメニュー -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="system-name">ID管理システム</div>
+            </div>
+            <ul class="menu-list" id="menuList">
+                <!-- メニューはJavaScriptで動的に生成 -->
+            </ul>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content" id="mainContent">
+            <div class="content-header">
+                <h1 class="content-title">ダッシュボード</h1>
+                <p class="content-description">ID管理システムへようこそ</p>
+            </div>
+            <div class="content-body">
+                <p>ここにメインコンテンツが表示されます。</p>
+                <p>左のサイドメニューから各機能にアクセスできます。</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // メニューデータ
+        const menuData = [
+            {
+                category: 'ユーザー管理',
+                items: ['ユーザー検索', 'ユーザー編集']
+            },
+            {
+                category: 'グループ管理',
+                items: ['グループ検索', 'グループ編集']
+            },
+            {
+                category: '権限管理',
+                items: ['ユーザー権限設定', 'グループ権限設定']
+            },
+            {
+                category: '個人設定',
+                items: ['メール通知設定']
+            },
+            {
+                category: '管理機能',
+                items: ['全体設定', '連携実行履歴', '操作ログ']
+            },
+            {
+                category: '就業者情報',
+                items: ['就業者検索', '就業者情報編集', '就業者連携データ出力設定', '就業者属性定義編集']
+            },
+            {
+                category: '組織情報',
+                items: ['組織検索', '組織情報編集', '組織連携データ出力設定', '組織ツリー編集', '組織属性定義編集']
+            },
+            {
+                category: '連携システム',
+                items: [
+                    '連携システム／インターフェイス一覧',
+                    '連携元インターフェイス連携実行',
+                    '連携元インターフェイス編集',
+                    '連携元インターフェイス項目マッピング',
+                    '連携先インターフェイス連携実行',
+                    '連携先インターフェイス編集',
+                    '連携先インターフェイス項目マッピング'
+                ]
+            },
+            {
+                category: 'コード定義',
+                items: ['コードグループ検索', 'コードグループ編集', 'コード変換グループ検索', 'コード変換グループ編集']
+            },
+            {
+                category: 'プリセットクエリー',
+                items: ['クエリー検索', 'クエリー編集', 'クエリー権限設定']
+            }
+        ];
+
+        // メニューの生成
+        function generateMenu() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+
+            menuData.forEach((menu, index) => {
+                const categoryLi = document.createElement('li');
+                categoryLi.className = 'menu-category';
+
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <span class="category-name">${menu.category}</span>
+                    <span class="category-icon">▶</span>
+                `;
+
+                const menuItems = document.createElement('div');
+                menuItems.className = 'menu-items';
+
+                menu.items.forEach(item => {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'menu-item';
+                    menuItem.innerHTML = `<a href="#${item}">${item}</a>`;
+                    menuItem.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        updateContent(menu.category, item);
+                    });
+                    menuItems.appendChild(menuItem);
+                });
+
+                categoryHeader.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                    menuItems.classList.toggle('show');
+                });
+
+                categoryLi.appendChild(categoryHeader);
+                categoryLi.appendChild(menuItems);
+                menuList.appendChild(categoryLi);
+            });
+        }
+
+        // コンテンツの更新
+        function updateContent(category, item) {
+            const contentTitle = document.querySelector('.content-title');
+            const contentDescription = document.querySelector('.content-description');
+            const contentBody = document.querySelector('.content-body');
+
+            contentTitle.textContent = item;
+            contentDescription.textContent = `${category} > ${item}`;
+            contentBody.innerHTML = `
+                <h2>${item}</h2>
+                <p>この画面では${item}の機能を提供します。</p>
+                <p>ここに具体的な機能の内容が表示されます。</p>
+            `;
+        }
+
+        // メニュー表示切替
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // 全画面切替
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        fullscreenToggle.addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('全画面表示に失敗しました:', err);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // 全画面状態の変化を監視
+        document.addEventListener('fullscreenchange', function() {
+            const icon = fullscreenToggle.querySelector('svg');
+            if (document.fullscreenElement) {
+                // 全画面時は縮小アイコンに変更
+                icon.innerHTML = `
+                    <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" stroke="currentColor" stroke-width="2" fill="none"></path>
+                `;
+                fullscreenToggle.title = '全画面解除';
+            } else {
+                // 通常時は拡大アイコンに変更
+                icon.innerHTML = `
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" stroke="currentColor" stroke-width="2" fill="none"></path>
+                `;
+                fullscreenToggle.title = '全画面切替';
+            }
+        });
+
+        // 初期化
+        generateMenu();
+    </script>
+</body>
+</html>

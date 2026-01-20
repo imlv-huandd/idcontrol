@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>グループ権限編集 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ecf0f1;
+            padding: 30px;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-description {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 900px;
+        }
+
+        /* グループ情報エリア */
+        .group-info-area {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .group-info-area h5 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            width: 200px;
+            font-weight: 600;
+            color: #495057;
+            padding-right: 15px;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #212529;
+        }
+
+        .info-value .badge {
+            margin-bottom: 3px;
+            margin-right: 5px;
+        }
+
+        .permission-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .permission-item {
+            padding: 4px 10px;
+            background-color: #e7f3ff;
+            border-left: 3px solid #0d6efd;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .user-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .user-item {
+            padding: 4px 10px;
+            background-color: #f0f0f0;
+            border-left: 3px solid #6c757d;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+
+        .no-permission {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        /* 権限設定エリア */
+        .permission-setting-area {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .permission-setting-area h5 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 10px;
+        }
+
+        .permission-section {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .permission-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .permission-section h6 {
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .permission-section .form-check {
+            margin-bottom: 10px;
+        }
+
+        .permission-section .form-check-label {
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .system-checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .system-checkbox-item {
+            background-color: transparent;
+            padding: 0;
+            border: none;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
+        .auto-grant-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        /* ボタンエリア */
+        .button-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding-top: 20px;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .btn {
+            padding: 10px 30px;
+            font-size: 15px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+            border-color: #0a58ca;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5c636a;
+            border-color: #565e64;
+        }
+
+        /* レスポンシブ対応 */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            .content-body {
+                padding: 20px;
+            }
+
+            .info-row {
+                flex-direction: column;
+            }
+
+            .info-label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .system-checkbox-group {
+                grid-template-columns: 1fr;
+            }
+
+            .button-area {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- コンテンツヘッダー -->
+    <div class="content-header">
+        <h1 class="content-title">グループ権限編集</h1>
+        <p class="content-description">グループに対する権限の設定を行います</p>
+    </div>
+
+    <!-- メインコンテンツ -->
+    <div class="content-body">
+        <!-- グループ情報エリア -->
+        <div class="group-info-area">
+            <h5>グループ情報</h5>
+            
+            <div class="info-row">
+                <div class="info-label">グループ名</div>
+                <div class="info-value">営業部</div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">現在のグループ権限</div>
+                <div class="info-value">
+                    <div class="permission-list">
+                        <div class="permission-item">マスターデータ管理者</div>
+                        <div class="permission-item">連携システム操作者（[元] OBIC人事システム）</div>
+                        <div class="permission-item">ダウンロード権限</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-label">所属ユーザー名</div>
+                <div class="info-value">
+                    <div class="user-list">
+                        <div class="user-item">佐藤 花子</div>
+                        <div class="user-item">鈴木 一郎</div>
+                        <div class="user-item">田中 美咲</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 権限設定エリア -->
+        <div class="permission-setting-area">
+            <h5>権限設定</h5>
+
+            <!-- テナント管理者（テナント管理者のみ表示） -->
+            <div class="permission-section" style="display: none;">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="tenantAdmin">
+                    <label class="form-check-label" for="tenantAdmin">
+                        テナント管理者
+                    </label>
+                </div>
+            </div>
+
+            <!-- マスターデータ管理者 -->
+            <div class="permission-section">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="masterDataAdmin" checked>
+                    <label class="form-check-label" for="masterDataAdmin">
+                        マスターデータ管理者
+                    </label>
+                </div>
+            </div>
+
+            <!-- 連携システム管理者 -->
+            <div class="permission-section">
+                <h6>連携システム管理者</h6>
+                <div class="system-checkbox-group">
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin1">
+                            <label class="form-check-label" for="relSysAdmin1">
+                                [元] OBIC（人事システム）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin2">
+                            <label class="form-check-label" for="relSysAdmin2">
+                                [先] Eラーニングシステム
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin3">
+                            <label class="form-check-label" for="relSysAdmin3">
+                                [元] 電子承認Create!Webフロー
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin4">
+                            <label class="form-check-label" for="relSysAdmin4">
+                                [先] トヨクモ
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin5">
+                            <label class="form-check-label" for="relSysAdmin5">
+                                [先] 福利厚生（ベネフィット）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin6">
+                            <label class="form-check-label" for="relSysAdmin6">
+                                [先] Adobe
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysAdmin7">
+                            <label class="form-check-label" for="relSysAdmin7">
+                                [先] OBIC（人事システム）
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 連携システム操作者 -->
+            <div class="permission-section">
+                <h6>連携システム操作者</h6>
+                <div class="system-checkbox-group">
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser1" checked>
+                            <label class="form-check-label" for="relSysUser1">
+                                [元] OBIC（人事システム）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser2">
+                            <label class="form-check-label" for="relSysUser2">
+                                [先] Eラーニングシステム
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser3">
+                            <label class="form-check-label" for="relSysUser3">
+                                [元] 電子承認Create!Webフロー
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser4">
+                            <label class="form-check-label" for="relSysUser4">
+                                [先] トヨクモ
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser5">
+                            <label class="form-check-label" for="relSysUser5">
+                                [先] 福利厚生（ベネフィット）
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser6">
+                            <label class="form-check-label" for="relSysUser6">
+                                [先] Adobe
+                            </label>
+                        </div>
+                    </div>
+                    <div class="system-checkbox-item">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="relSysUser7">
+                            <label class="form-check-label" for="relSysUser7">
+                                [先] OBIC（人事システム）
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 閲覧者 -->
+            <div class="permission-section">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="normal">
+                    <label class="form-check-label" for="normal">
+                        閲覧者
+                    </label>
+                </div>
+            </div>
+
+            <!-- ダウンロード権限 -->
+            <div class="permission-section">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="download" checked>
+                    <label class="form-check-label" for="download">
+                        ダウンロード権限を付与
+                    </label>
+                </div>
+                <div class="auto-grant-notice">
+                    <strong>注意:</strong> テナント管理者、連携システム管理者、マスターデータ管理者権限を選択した場合、ダウンロード権限は自動的に付与されます。
+                </div>
+            </div>
+        </div>
+
+        <!-- ボタンエリア -->
+        <div class="button-area">
+            <button type="button" class="btn btn-secondary" onclick="handleCancel()">キャンセル</button>
+            <button type="button" class="btn btn-primary" onclick="handleUpdate()">更新</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 更新ボタン処理
+        function handleUpdate() {
+            if (!validatePermissions()) {
+                return;
+            }
+
+            if (confirm('現在の内容で登録します。よろしいですか？')) {
+                alert('登録が完了しました。');
+                // グループ権限検索画面に遷移
+                // window.location.href = 'グループ権限検索.html';
+            }
+        }
+
+        // キャンセルボタン処理
+        function handleCancel() {
+            if (confirm('入力中の内容が破棄されます。よろしいですか？')) {
+                // グループ権限検索画面に遷移
+                // window.location.href = 'グループ権限検索.html';
+                alert('キャンセルしました。');
+            }
+        }
+
+        // バリデーション処理
+        function validatePermissions() {
+            const tenantAdmin = document.getElementById('tenantAdmin')?.checked;
+            const masterDataAdmin = document.getElementById('masterDataAdmin').checked;
+            const normal = document.getElementById('normal').checked;
+            
+            // 連携システム管理者の選択チェック
+            const relSysAdminChecked = Array.from(document.querySelectorAll('[id^="relSysAdmin"]'))
+                .some(checkbox => checkbox.checked);
+            
+            // 連携システム操作者の選択チェック
+            const relSysUserChecked = Array.from(document.querySelectorAll('[id^="relSysUser"]'))
+                .some(checkbox => checkbox.checked);
+
+            // ダウンロード権限以外が1つも選択されていない場合
+            if (!tenantAdmin && !masterDataAdmin && !normal && !relSysAdminChecked && !relSysUserChecked) {
+                alert('ダウンロード権限以外の権限を1つ以上選択してください。');
+                return false;
+            }
+
+            return true;
+        }
+
+        // ダウンロード権限の自動付与チェック
+        function checkAutoDownloadGrant() {
+            const tenantAdmin = document.getElementById('tenantAdmin')?.checked;
+            const masterDataAdmin = document.getElementById('masterDataAdmin').checked;
+            const relSysAdminChecked = Array.from(document.querySelectorAll('[id^="relSysAdmin"]'))
+                .some(checkbox => checkbox.checked);
+
+            const downloadCheckbox = document.getElementById('download');
+            const notice = document.querySelector('.auto-grant-notice');
+
+            // 上位権限が選択されている場合、ダウンロード権限を自動付与
+            if (tenantAdmin || masterDataAdmin || relSysAdminChecked) {
+                downloadCheckbox.checked = true;
+                notice.style.display = 'block';
+            } else {
+                notice.style.display = 'none';
+            }
+        }
+
+        // チェックボックスの変更を監視
+        document.addEventListener('DOMContentLoaded', function() {
+            // 全てのチェックボックスに変更イベントを追加
+            const allCheckboxes = document.querySelectorAll('.form-check-input');
+            allCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', checkAutoDownloadGrant);
+            });
+
+            // 初期表示時のチェック
+            checkAutoDownloadGrant();
+        });
+    </script>
+</body>
+</html>

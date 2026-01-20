@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コードグループ編集 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #ecf0f1;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            padding: 30px;
+            background-color: #ecf0f1;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 1000px;
+        }
+
+        /* セクション */
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* フォームエリア */
+        .form-area {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .form-group input:disabled,
+        .form-group select:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        /* コードエリア */
+        .code-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .code-table-wrapper {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .code-table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+
+        .code-table thead {
+            background-color: #f8f9fa;
+        }
+
+        .code-table th {
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .code-table tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            transition: background-color 0.2s;
+        }
+
+        .code-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .code-table tbody tr.dragging {
+            opacity: 0.5;
+        }
+
+        .code-table tbody tr.drag-over {
+            background-color: #e3f2fd;
+        }
+
+        .code-table td {
+            padding: 10px 12px;
+            vertical-align: middle;
+        }
+
+        .code-table input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .code-table input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .drag-handle {
+            cursor: move;
+            color: #95a5a6;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+
+        .drag-handle:hover {
+            color: #7f8c8d;
+        }
+
+        .row-number {
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* ボタン */
+        .btn-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            min-width: 120px;
+            padding: 10px 20px;
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 13px;
+        }
+
+        /* 削除ボタン */
+        .delete-btn {
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .delete-btn:hover {
+            color: #c0392b;
+        }
+
+        .delete-btn.disabled {
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* 注釈 */
+        .note {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        /* ドロップダウン選択肢の幅調整 */
+        .form-group select {
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-content">
+        <div class="container-fluid">
+            <div class="content-header">
+                <h1 class="content-title">コードグループ新規登録</h1>
+            </div>
+
+            <div class="content-body">
+                <!-- 基本情報エリア -->
+                <div class="section">
+                    <h3 class="section-title">基本情報</h3>
+                    <div class="form-area">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="codeGroupName">
+                                        コードグループ名
+                                        <span class="required">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="codeGroupName" placeholder="例：部署区分">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="adminSystem">管理連携システム</label>
+                                    <select class="form-control" id="adminSystem">
+                                        <option value="">（未設定）</option>
+                                        <option value="1">OBIC（人事システム）</option>
+                                        <option value="2">Eラーニングシステム</option>
+                                        <option value="3">電子承認Create!Webフロー</option>
+                                        <option value="4">トヨクモ</option>
+                                        <option value="5">福利厚生（ベネフィット）</option>
+                                    </select>
+                                    <div class="note">このコードグループを主体で管理する連携システムを選択してください</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- コードエリア -->
+                <div class="section">
+                    <div class="code-list-header">
+                        <h3 class="section-title mb-0">コード</h3>
+                        <button type="button" class="btn btn-success btn-sm" onclick="addCodeRow()">
+                            <i class="bi bi-plus-circle"></i> 追加
+                        </button>
+                    </div>
+
+                    <div class="code-table-wrapper">
+                        <table class="code-table table mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;"></th>
+                                    <th style="width: 80px;">No.(表示順)</th>
+                                    <th style="width: 35%;">コード名 <span class="required">*</span></th>
+                                    <th style="width: 35%;">コード値 <span class="required">*</span></th>
+                                    <th style="width: 80px; text-align: center;">削除</th>
+                                </tr>
+                            </thead>
+                            <tbody id="codeTableBody">
+                                <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)" ondragend="dragEnd(event)">
+                                    <td class="text-center">
+                                        <span class="drag-handle">☰</span>
+                                    </td>
+                                    <td>
+                                        <span class="row-number">1</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：営業部" value="営業部">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：SALES" value="SALES">
+                                    </td>
+                                    <td class="text-center">
+                                        <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                                    </td>
+                                </tr>
+                                <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)" ondragend="dragEnd(event)">
+                                    <td class="text-center">
+                                        <span class="drag-handle">☰</span>
+                                    </td>
+                                    <td>
+                                        <span class="row-number">2</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：開発部" value="開発部">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：DEV" value="DEV">
+                                    </td>
+                                    <td class="text-center">
+                                        <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                                    </td>
+                                </tr>
+                                <tr draggable="true" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="drop(event)" ondragend="dragEnd(event)">
+                                    <td class="text-center">
+                                        <span class="drag-handle">☰</span>
+                                    </td>
+                                    <td>
+                                        <span class="row-number">3</span>
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：総務部" value="総務部">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control" placeholder="例：GENERAL" value="GENERAL">
+                                    </td>
+                                    <td class="text-center">
+                                        <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="note mt-2">
+                        <i class="bi bi-info-circle"></i> 行をドラッグして表示順を変更できます。最低1件のコードが必要です。
+                    </div>
+                </div>
+
+                <!-- ボタンエリア -->
+                <div class="btn-area">
+                    <button type="button" class="btn btn-primary" onclick="saveCodeGroup()">
+                        <i class="bi bi-check-circle"></i> 登録
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="location.href='コードグループ検索.html'">
+                        <i class="bi bi-x-circle"></i> キャンセル
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <script>
+        let draggedRow = null;
+
+        function addCodeRow() {
+            const tbody = document.getElementById('codeTableBody');
+            const rowCount = tbody.children.length + 1;
+            const newRow = document.createElement('tr');
+            newRow.draggable = true;
+            newRow.ondragstart = dragStart;
+            newRow.ondragover = dragOver;
+            newRow.ondrop = drop;
+            newRow.ondragend = dragEnd;
+            
+            newRow.innerHTML = `
+                <td class="text-center">
+                    <span class="drag-handle">☰</span>
+                </td>
+                <td>
+                    <span class="row-number">${rowCount}</span>
+                </td>
+                <td>
+                    <input type="text" class="form-control" placeholder="コード名を入力">
+                </td>
+                <td>
+                    <input type="text" class="form-control" placeholder="コード値を入力">
+                </td>
+                <td class="text-center">
+                    <i class="bi bi-trash delete-btn" onclick="deleteRow(this)"></i>
+                </td>
+            `;
+            
+            tbody.appendChild(newRow);
+            updateRowNumbers();
+        }
+
+        function deleteRow(element) {
+            const tbody = document.getElementById('codeTableBody');
+            
+            // 最低1行は残す
+            if (tbody.children.length <= 1) {
+                alert('最低1件のコードが必要です。');
+                return;
+            }
+            
+            if (confirm('この行を削除しますか？')) {
+                const row = element.closest('tr');
+                row.remove();
+                updateRowNumbers();
+            }
+        }
+
+        function updateRowNumbers() {
+            const tbody = document.getElementById('codeTableBody');
+            const rows = tbody.children;
+            
+            for (let i = 0; i < rows.length; i++) {
+                const numberCell = rows[i].querySelector('.row-number');
+                numberCell.textContent = i + 1;
+            }
+            
+            // 削除ボタンの制御
+            updateDeleteButtons();
+        }
+
+        function updateDeleteButtons() {
+            const tbody = document.getElementById('codeTableBody');
+            const deleteButtons = tbody.querySelectorAll('.delete-btn');
+            
+            if (tbody.children.length <= 1) {
+                deleteButtons.forEach(btn => {
+                    btn.classList.add('disabled');
+                });
+            } else {
+                deleteButtons.forEach(btn => {
+                    btn.classList.remove('disabled');
+                });
+            }
+        }
+
+        function dragStart(e) {
+            draggedRow = e.target.closest('tr');
+            e.target.closest('tr').classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow) {
+                targetRow.classList.add('drag-over');
+            }
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            
+            const targetRow = e.target.closest('tr');
+            if (targetRow && targetRow !== draggedRow) {
+                const tbody = document.getElementById('codeTableBody');
+                const allRows = Array.from(tbody.children);
+                const draggedIndex = allRows.indexOf(draggedRow);
+                const targetIndex = allRows.indexOf(targetRow);
+                
+                if (draggedIndex < targetIndex) {
+                    targetRow.after(draggedRow);
+                } else {
+                    targetRow.before(draggedRow);
+                }
+                
+                updateRowNumbers();
+            }
+            
+            // ドラッグオーバーの表示を削除
+            document.querySelectorAll('.drag-over').forEach(row => {
+                row.classList.remove('drag-over');
+            });
+        }
+
+        function dragEnd(e) {
+            e.target.closest('tr').classList.remove('dragging');
+            
+            // すべてのドラッグオーバー表示を削除
+            document.querySelectorAll('.drag-over').forEach(row => {
+                row.classList.remove('drag-over');
+            });
+        }
+
+        function saveCodeGroup() {
+            const codeGroupName = document.getElementById('codeGroupName').value;
+            
+            if (!codeGroupName.trim()) {
+                alert('コードグループ名を入力してください。');
+                return;
+            }
+            
+            // コードの入力チェック
+            const rows = document.querySelectorAll('#codeTableBody tr');
+            let hasError = false;
+            
+            rows.forEach((row, index) => {
+                const inputs = row.querySelectorAll('input');
+                if (!inputs[0].value.trim() || !inputs[1].value.trim()) {
+                    alert(`${index + 1}行目のコード名とコード値を入力してください。`);
+                    hasError = true;
+                    return;
+                }
+            });
+            
+            if (hasError) return;
+            
+            if (confirm('現在の内容で登録します。よろしいですか？')) {
+                alert('登録が完了しました。');
+                location.href = 'コードグループ検索.html';
+            }
+        }
+
+        // 初期化
+        window.addEventListener('DOMContentLoaded', function() {
+            updateDeleteButtons();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+	],
+	"settings": {
+		"markdown-pdf.displayHeaderFooter": false,
+    	"markdown-pdf.includeDefaultStyles": false,
+		"markdown-pdf.outputDirectory": "./output",
+		"markdown-pdf.outputDirectoryRelativePathFile": true,
+		"markdown-pdf.mermaidServer": "https://unpkg.com/mermaid@10.4.0/dist/mermaid.min.js",
+    	"markdown-pdf.format": "A3",
+		"markdown-pdf.orientation": "portrait",
+		"markdown-pdf.styles": [
+            "./spec/github-markdown.css",
+			"./spec/font.css",
+        ],
+	},
+	"extensions": {
+		"recommendations": [
+			"takumii.markdowntable",
+			"shd101wyy.markdown-preview-enhanced",
+			"yzane.markdown-pdf"
+		]
+	}
+}
