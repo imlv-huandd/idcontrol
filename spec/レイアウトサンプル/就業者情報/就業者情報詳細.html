@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就業者情報詳細 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 60px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left,
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 90;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .menu-category {
+            margin-bottom: 5px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-icon {
+            transition: transform 0.2s;
+        }
+
+        .category-header.expanded .category-icon {
+            transform: rotate(90deg);
+        }
+
+        .menu-items {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-items.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .menu-item a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+        }
+
+        .main-content {
+            margin-top: 60px;
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-description {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .button-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-new {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-new:hover {
+            background-color: #229954;
+        }
+
+        .modal-dialog {
+            max-width: 1100px;
+        }
+
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 15px 30px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .form-group input:disabled,
+        .form-group select:disabled,
+        .form-group textarea:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .readonly-value {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        .row-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-check {
+            display: flex !important;
+            align-items: center;
+            padding: 8px 0;
+            min-height: 38px;
+        }
+
+        .form-check-input {
+            width: 18px !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+            height: 18px !important;
+            min-height: 18px !important;
+            max-height: 18px !important;
+            margin-right: 10px !important;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            padding: 0 !important;
+            cursor: pointer;
+            flex-shrink: 0;
+            float: none !important;
+            position: static !important;
+            box-sizing: border-box !important;
+            aspect-ratio: 1 / 1 !important;
+            border-width: 1px !important;
+        }
+
+        .form-check-input:disabled {
+            cursor: not-allowed;
+        }
+
+        .form-check-label {
+            margin-bottom: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .inline-action {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-add {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .btn-add:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            border-color: #7f8c8d;
+        }
+
+        .demo-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1050;
+        }
+
+        .demo-controls h6 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .demo-controls .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .demo-controls .btn:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .row-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-button" id="menuToggle" title="メニュー切替">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div style="font-size: 18px; font-weight: bold;">ID管理システム</div>
+            </div>
+            <div class="header-right">
+                <button class="icon-button" title="通知">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </button>
+                <button class="icon-button" title="設定">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </button>
+                <div class="user-name">サンプル 太郎（マスターデータ管理者）</div>
+            </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="system-name">メニュー</div>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-category">
+                    <div class="category-header expanded" onclick="toggleCategory(this)">
+                        <span class="category-name">就業者情報</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items show">
+                        <li class="menu-item active"><a href="#">就業者検索</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">組織情報</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">組織検索</a></li>
+                        <li class="menu-item"><a href="#">役職検索</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">権限管理</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">ユーザー権限検索</a></li>
+                        <li class="menu-item"><a href="#">グループ権限検索</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <div class="content-header">
+                <h1 class="content-title">就業者検索</h1>
+                <p class="content-description">就業者情報を検索・管理します</p>
+            </div>
+
+            <div class="content-body">
+                <div class="button-area">
+                    <button type="button" class="btn-new" onclick="openNewPersonModal()">＋ 新規登録</button>
+                </div>
+                <p>※ この画面は就業者情報詳細ダイアログのデモ用の親画面です。</p>
+                <p>「新規登録」ボタンまたは右下のデモ用ボタンで就業者情報詳細ダイアログを開くことができます。</p>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal fade" id="personDetailModal" tabindex="-1" aria-labelledby="personDetailModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="personDetailModalLabel">
+                        <span id="titleNew">就業者情報新規登録</span>
+                        <span id="titleDetail" style="display: none;">就業者情報詳細</span>
+                        <span id="titleEdit" style="display: none;">就業者情報編集</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-section">
+                        <h4 class="section-title">基本情報</h4>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="tenantPersonId">マンナンバー</label>
+                                <input type="text" id="tenantPersonId" class="form-control" placeholder="6桁の数字を入力" maxlength="6" data-lock>
+                            </div>
+                            <div class="form-group">
+                                <label for="baseDate">基準日</label>
+                                <input type="date" id="baseDate" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="lastName">姓</label>
+                                <input type="text" id="lastName" class="form-control" placeholder="姓を入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="firstName">名</label>
+                                <input type="text" id="firstName" class="form-control" placeholder="名を入力" maxlength="100">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group" id="searchDateGroup">
+                                <label for="searchDate">検索基準日</label>
+                                <input type="date" id="searchDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="abolishDate">廃止日</label>
+                                <div class="readonly-value" id="abolishDate">-</div>
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="latestMedium">最終更新媒体</label>
+                                <div class="readonly-value" id="latestMedium">-</div>
+                            </div>
+                            <div class="form-group">
+                                <label> </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">所属情報</h4>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="mainOrgName">主務組織名称</label>
+                                <input type="text" id="mainOrgName" class="form-control" list="orgNameList" placeholder="組織名称を選択">
+                            </div>
+                            <div class="form-group">
+                                <label for="mainOrgId">主務組織ID</label>
+                                <input type="text" id="mainOrgId" class="form-control" list="orgIdList" placeholder="テナント組織IDを選択">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="mainPositionName">主務役職名称</label>
+                                <input type="text" id="mainPositionName" class="form-control" list="positionNameList" placeholder="役職名称を選択">
+                            </div>
+                            <div class="form-group">
+                                <label for="mainPositionId">主務役職ID</label>
+                                <input type="text" id="mainPositionId" class="form-control" list="positionIdList" placeholder="テナント役職IDを選択">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label> </label>
+                            </div>
+                            <div class="form-group inline-action" style="justify-content: flex-end;">
+                                <button type="button" class="btn-add" id="addSecondaryBtn" onclick="addSecondaryRow()">兼務追加</button>
+                            </div>
+                        </div>
+                        <div id="secondaryRowBase" class="secondary-row-group" style="display: none;">
+                            <div class="row-cols">
+                                <div class="form-group">
+                                    <label for="subOrgName">兼務1 組織名称</label>
+                                    <input type="text" id="subOrgName" class="form-control" list="orgNameList" placeholder="組織名称を選択">
+                                </div>
+                                <div class="form-group">
+                                    <label for="subOrgId">兼務1 組織ID</label>
+                                    <input type="text" id="subOrgId" class="form-control" list="orgIdList" placeholder="テナント組織IDを選択">
+                                </div>
+                            </div>
+                            <div class="row-cols">
+                                <div class="form-group">
+                                    <label for="subPositionName">兼務1 役職名称</label>
+                                    <input type="text" id="subPositionName" class="form-control" list="positionNameList" placeholder="役職名称を選択">
+                                </div>
+                                <div class="form-group">
+                                    <label for="subPositionId">兼務1 役職ID</label>
+                                    <input type="text" id="subPositionId" class="form-control" list="positionIdList" placeholder="テナント役職IDを選択">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="secondaryRows"></div>
+                        <datalist id="orgNameList">
+                            <option value="営業第一部"></option>
+                            <option value="営業企画室"></option>
+                            <option value="人事部"></option>
+                        </datalist>
+                        <datalist id="orgIdList">
+                            <option value="12345678901"></option>
+                            <option value="23456789012"></option>
+                            <option value="34567890123"></option>
+                        </datalist>
+                        <datalist id="positionNameList">
+                            <option value="主任"></option>
+                            <option value="担当"></option>
+                            <option value="課長"></option>
+                        </datalist>
+                        <datalist id="positionIdList">
+                            <option value="101"></option>
+                            <option value="215"></option>
+                            <option value="350"></option>
+                        </datalist>
+                    </div>
+
+                    <div class="form-section">
+                        <h4 class="section-title">追加情報</h4>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="lastNameKana">姓カナ</label>
+                                <input type="text" id="lastNameKana" class="form-control" placeholder="姓カナを入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="firstNameKana">名カナ</label>
+                                <input type="text" id="firstNameKana" class="form-control" placeholder="名カナを入力" maxlength="100">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="birthDate">生年月日</label>
+                                <input type="date" id="birthDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="mailAddress">メールアドレス</label>
+                                <input type="email" id="mailAddress" class="form-control" placeholder="user@example.com" maxlength="200">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="familyGender">戸籍性別</label>
+                                <input type="text" id="familyGender" class="form-control" placeholder="例: 男性/女性" maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="useCallName">呼称使用</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="useCallName">
+                                    <label class="form-check-label" for="useCallName">呼称を使用する</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="familyName">戸籍姓</label>
+                                <input type="text" id="familyName" class="form-control" placeholder="戸籍姓を入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="familyGivenName">戸籍名</label>
+                                <input type="text" id="familyGivenName" class="form-control" placeholder="戸籍名を入力" maxlength="100">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="familyNameKana">戸籍姓カナ</label>
+                                <input type="text" id="familyNameKana" class="form-control" placeholder="戸籍姓カナを入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="familyGivenKana">戸籍名カナ</label>
+                                <input type="text" id="familyGivenKana" class="form-control" placeholder="戸籍名カナを入力" maxlength="100">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="employmentType">雇用形態</label>
+                                <input type="text" id="employmentType" class="form-control" placeholder="雇用形態を入力" maxlength="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="officer">役員</label>
+                                <input type="text" id="officer" class="form-control" placeholder="役員区分を入力" maxlength="50">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="secondment">出向</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="secondment">
+                                    <label class="form-check-label" for="secondment">出向中</label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="leave">休職</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="leave">
+                                    <label class="form-check-label" for="leave">休職中</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="hireDate">入社日/契約開始日</label>
+                                <input type="date" id="hireDate" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label for="retireDate">退職日/契約終了日/離任日</label>
+                                <input type="date" id="retireDate" class="form-control">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="legacyId">旧マンナンバー</label>
+                                <input type="text" id="legacyId" class="form-control" placeholder="旧マンナンバーを入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="useNtad">NTAD利用</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="useNtad">
+                                    <label class="form-check-label" for="useNtad">利用する</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="obicCategory">OBIC社員区分</label>
+                                <input type="text" id="obicCategory" class="form-control" placeholder="OBIC社員区分を入力" maxlength="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="obicQualification">OBIC資格</label>
+                                <input type="text" id="obicQualification" class="form-control" placeholder="OBIC資格を入力" maxlength="50">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="obicGrade">OBIC等級</label>
+                                <input type="text" id="obicGrade" class="form-control" placeholder="OBIC等級を入力" maxlength="50">
+                            </div>
+                            <div class="form-group">
+                                <label for="obicHireType">OBIC採用形態</label>
+                                <input type="text" id="obicHireType" class="form-control" placeholder="OBIC採用形態を入力" maxlength="50">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="obicFormerName">OBIC旧社名</label>
+                                <input type="text" id="obicFormerName" class="form-control" placeholder="OBIC旧社名を入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="obicBusinessSite">OBIC事業場名</label>
+                                <input type="text" id="obicBusinessSite" class="form-control" placeholder="OBIC事業場名を入力" maxlength="100">
+                            </div>
+                        </div>
+                        <div class="row-cols">
+                            <div class="form-group">
+                                <label for="obicRelatedCompany">OBIC関連会社</label>
+                                <input type="text" id="obicRelatedCompany" class="form-control" placeholder="OBIC関連会社を入力" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label> </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="newModeButtons">
+                        <button type="button" class="btn btn-success" onclick="handleRegister()">登録</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    </div>
+                    <div id="detailModeButtons" style="display: none;">
+                        <button type="button" class="btn btn-primary" id="editBtn" onclick="switchToEditMode()">編集</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                    </div>
+                    <div id="editModeButtons" style="display: none;">
+                        <button type="button" class="btn btn-success" onclick="handleUpdate()">更新</button>
+                        <button type="button" class="btn btn-secondary" onclick="handleCancel()">キャンセル</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="demo-controls">
+        <h6>デモ用モード切替</h6>
+        <button type="button" class="btn btn-success btn-sm" onclick="openNewPersonModal()">新規登録モード</button>
+        <button type="button" class="btn btn-info btn-sm" onclick="openDetailPersonModal()">詳細表示モード</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="openEditPersonModal()">編集モード（直接）</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let personDetailModal;
+        let currentMode = 'new';
+        let originalData = {};
+        let secondaryRowCount = 0;
+        const maxSecondaryRows = 20;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            personDetailModal = new bootstrap.Modal(document.getElementById('personDetailModal'));
+
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+        });
+
+        function toggleCategory(element) {
+            element.classList.toggle('expanded');
+            const menuItems = element.nextElementSibling;
+            menuItems.classList.toggle('show');
+        }
+
+        function openNewPersonModal() {
+            currentMode = 'new';
+            switchTitle('new');
+            switchButtons('new');
+            document.getElementById('searchDateGroup').style.display = 'none';
+            resetForm();
+            setFormEditable(true);
+            personDetailModal.show();
+        }
+
+        function openDetailPersonModal() {
+            currentMode = 'detail';
+            switchTitle('detail');
+            switchButtons('detail');
+            document.getElementById('searchDateGroup').style.display = '';
+            loadSampleData();
+            setFormEditable(false);
+            personDetailModal.show();
+        }
+
+        function openEditPersonModal() {
+            currentMode = 'edit';
+            switchTitle('edit');
+            switchButtons('edit');
+            document.getElementById('searchDateGroup').style.display = 'none';
+            loadSampleData();
+            setFormEditable(true, true);
+            personDetailModal.show();
+        }
+
+        function switchToEditMode() {
+            saveCurrentData();
+            currentMode = 'edit';
+            switchTitle('edit');
+            switchButtons('edit');
+            document.getElementById('searchDateGroup').style.display = 'none';
+            setFormEditable(true, true);
+        }
+
+        function switchTitle(mode) {
+            document.getElementById('titleNew').style.display = mode === 'new' ? '' : 'none';
+            document.getElementById('titleDetail').style.display = mode === 'detail' ? '' : 'none';
+            document.getElementById('titleEdit').style.display = mode === 'edit' ? '' : 'none';
+        }
+
+        function switchButtons(mode) {
+            document.getElementById('newModeButtons').style.display = mode === 'new' ? '' : 'none';
+            document.getElementById('detailModeButtons').style.display = mode === 'detail' ? '' : 'none';
+            document.getElementById('editModeButtons').style.display = mode === 'edit' ? '' : 'none';
+        }
+
+        function resetForm() {
+            document.querySelectorAll('#personDetailModal input').forEach(function(input) {
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+            document.getElementById('searchDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('abolishDate').textContent = '-';
+            document.getElementById('latestMedium').textContent = '-';
+            document.getElementById('secondaryRowBase').style.display = 'none';
+            document.getElementById('secondaryRows').innerHTML = '';
+            secondaryRowCount = 0;
+        }
+
+        function loadSampleData() {
+            document.getElementById('tenantPersonId').value = '123456';
+            document.getElementById('baseDate').value = '2026-01-01';
+            document.getElementById('lastName').value = '田中';
+            document.getElementById('firstName').value = '花子';
+            document.getElementById('searchDate').value = '2026-02-01';
+            document.getElementById('abolishDate').textContent = '9999/12/31';
+            document.getElementById('latestMedium').textContent = 'バッチ連携';
+            document.getElementById('mainOrgName').value = '営業第一部';
+            document.getElementById('mainOrgId').value = '12345678901';
+            document.getElementById('mainPositionName').value = '主任';
+            document.getElementById('mainPositionId').value = '101';
+            document.getElementById('secondaryRowBase').style.display = '';
+            document.getElementById('subOrgName').value = '営業企画室';
+            document.getElementById('subOrgId').value = '23456789012';
+            document.getElementById('subPositionName').value = '担当';
+            document.getElementById('subPositionId').value = '215';
+            document.getElementById('legacyId').value = '23456789010';
+            document.getElementById('lastNameKana').value = 'タナカ';
+            document.getElementById('firstNameKana').value = 'ハナコ';
+            document.getElementById('useCallName').checked = true;
+            document.getElementById('familyName').value = '田中';
+            document.getElementById('familyGivenName').value = '花子';
+            document.getElementById('familyNameKana').value = 'タナカ';
+            document.getElementById('familyGivenKana').value = 'ハナコ';
+            document.getElementById('familyGender').value = '女性';
+            document.getElementById('birthDate').value = '1990-08-15';
+            document.getElementById('mailAddress').value = 'hanako.tanaka@example.com';
+            document.getElementById('employmentType').value = '正社員';
+            document.getElementById('officer').value = '一般';
+            document.getElementById('secondment').checked = false;
+            document.getElementById('leave').checked = false;
+            document.getElementById('hireDate').value = '2015-04-01';
+            document.getElementById('retireDate').value = '';
+            document.getElementById('useNtad').checked = true;
+            document.getElementById('obicCategory').value = 'A';
+            document.getElementById('obicQualification').value = '資格1';
+            document.getElementById('obicGrade').value = 'G2';
+            document.getElementById('obicHireType').value = '新卒';
+            document.getElementById('obicFormerName').value = '旧社名サンプル';
+            document.getElementById('obicBusinessSite').value = '東京本社';
+            document.getElementById('obicRelatedCompany').value = '関連会社A';
+        }
+
+        function setFormEditable(editable, keepReadonly) {
+            document.querySelectorAll('#personDetailModal input').forEach(function(input) {
+                if (!editable) {
+                    input.disabled = true;
+                    return;
+                }
+
+                if (keepReadonly && input.hasAttribute('data-lock')) {
+                    input.disabled = true;
+                    return;
+                }
+
+                input.disabled = false;
+            });
+
+            document.getElementById('addSecondaryBtn').disabled = !editable;
+        }
+
+        function saveCurrentData() {
+            originalData = {};
+            document.querySelectorAll('#personDetailModal input').forEach(function(input) {
+                originalData[input.id] = input.type === 'checkbox' ? input.checked : input.value;
+            });
+        }
+
+        function handleRegister() {
+            alert('登録を実行します（デモ）');
+        }
+
+        function handleUpdate() {
+            alert('更新を実行します（デモ）');
+        }
+
+        function handleCancel() {
+            if (confirm('変更を破棄してよろしいですか？')) {
+                if (currentMode === 'edit') {
+                    switchTitle('detail');
+                    switchButtons('detail');
+                    document.getElementById('searchDateGroup').style.display = '';
+                    setFormEditable(false);
+                }
+            }
+        }
+
+        function addSecondaryRow() {
+            const baseRow = document.getElementById('secondaryRowBase');
+            const currentTotal = (baseRow.style.display === 'none' ? 0 : 1) + secondaryRowCount;
+
+            if (currentTotal >= maxSecondaryRows) {
+                alert('兼務行は最大20行まで追加できます。');
+                return;
+            }
+
+            if (baseRow.style.display === 'none') {
+                baseRow.style.display = '';
+                return;
+            }
+
+            secondaryRowCount += 1;
+            const labelIndex = secondaryRowCount + 1;
+            const container = document.getElementById('secondaryRows');
+            const row = document.createElement('div');
+            row.className = 'secondary-row-group';
+            row.innerHTML = `
+                <div class="row-cols">
+                    <div class="form-group">
+                        <label>兼務${labelIndex} 組織名称</label>
+                        <input type="text" class="form-control" list="orgNameList" placeholder="組織名称を選択">
+                    </div>
+                    <div class="form-group">
+                        <label>兼務${labelIndex} 組織ID</label>
+                        <input type="text" class="form-control" list="orgIdList" placeholder="テナント組織IDを選択">
+                    </div>
+                </div>
+                <div class="row-cols">
+                    <div class="form-group">
+                        <label>兼務${labelIndex} 役職名称</label>
+                        <input type="text" class="form-control" list="positionNameList" placeholder="役職名称を選択">
+                    </div>
+                    <div class="form-group">
+                        <label>兼務${labelIndex} 役職ID</label>
+                        <input type="text" class="form-control" list="positionIdList" placeholder="テナント役職IDを選択">
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        }
+    </script>
+</body>
+</html>

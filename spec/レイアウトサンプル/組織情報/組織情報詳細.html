@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>組織情報詳細 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 60px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        /* サイドメニュー */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 90;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .menu-category {
+            margin-bottom: 5px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-icon {
+            transition: transform 0.2s;
+        }
+
+        .category-header.expanded .category-icon {
+            transform: rotate(90deg);
+        }
+
+        .menu-items {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-items.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .menu-item a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            margin-top: 60px;
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-description {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* ボタンエリア */
+        .button-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-new {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-new:hover {
+            background-color: #229954;
+        }
+
+        /* モーダルスタイル */
+        .modal-dialog {
+            max-width: 900px;
+        }
+
+        .modal-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .modal-body {
+            padding: 30px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 15px 30px;
+        }
+
+        /* フォームエリア */
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .form-row {
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .form-group input:disabled,
+        .form-group select:disabled,
+        .form-group textarea:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
+        }
+
+        .form-group input[readonly],
+        .form-group select[readonly],
+        .form-group textarea[readonly] {
+            background-color: #f8f9fa;
+            cursor: default;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(0, 0, 0, 0.3);
+        }
+
+        .form-check {
+            display: flex !important;
+            align-items: center;
+            padding: 8px 0;
+            min-height: 38px;
+        }
+
+        .form-check-input {
+            width: 18px !important;
+            min-width: 18px !important;
+            max-width: 18px !important;
+            height: 18px !important;
+            min-height: 18px !important;
+            max-height: 18px !important;
+            margin-right: 10px !important;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            padding: 0 !important;
+            cursor: pointer;
+            flex-shrink: 0;
+            float: none !important;
+            position: static !important;
+            box-sizing: border-box !important;
+            aspect-ratio: 1 / 1 !important;
+            border-width: 1px !important;
+        }
+
+        .form-check-input:disabled {
+            cursor: not-allowed;
+        }
+
+        .form-check-label {
+            margin-bottom: 0 !important;
+            margin-left: 0 !important;
+            padding-left: 0 !important;
+            cursor: pointer;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .form-help-text {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* 2列レイアウト */
+        .row-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .row-cols {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ボタンスタイル */
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: #95a5a6;
+            border-color: #95a5a6;
+        }
+
+        .btn-secondary:hover {
+            background-color: #7f8c8d;
+            border-color: #7f8c8d;
+        }
+
+        /* 読み取り専用表示 */
+        .readonly-value {
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #495057;
+            min-height: 38px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* デモ用モード切替ボタン */
+        .demo-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1050;
+        }
+
+        .demo-controls h6 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .demo-controls .btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+
+        .demo-controls .btn:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-button" id="menuToggle" title="メニュー切替">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+                <div style="font-size: 18px; font-weight: bold;">ID管理システム</div>
+            </div>
+            <div class="header-right">
+                <button class="icon-button" title="通知">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                </button>
+                <button class="icon-button" title="設定">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </button>
+                <div class="user-name">サンプル 太郎（マスターデータ管理者）</div>
+            </div>
+        </header>
+
+        <!-- サイドメニュー -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="system-name">メニュー</div>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">ユーザー管理</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">ユーザー検索</a></li>
+                        <li class="menu-item"><a href="#">ユーザー編集</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">グループ管理</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">グループ検索</a></li>
+                        <li class="menu-item"><a href="#">グループ編集</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header expanded" onclick="toggleCategory(this)">
+                        <span class="category-name">組織情報</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items show">
+                        <li class="menu-item active"><a href="#">組織検索</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">権限管理</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">ユーザー権限設定</a></li>
+                        <li class="menu-item"><a href="#">グループ権限設定</a></li>
+                    </ul>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header" onclick="toggleCategory(this)">
+                        <span class="category-name">連携システム</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <ul class="menu-items">
+                        <li class="menu-item"><a href="#">連携システム一覧</a></li>
+                        <li class="menu-item"><a href="#">連携元インターフェイス</a></li>
+                        <li class="menu-item"><a href="#">連携先インターフェイス</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content" id="mainContent">
+            <div class="content-header">
+                <h1 class="content-title">組織検索</h1>
+                <p class="content-description">組織情報を検索・管理します</p>
+            </div>
+
+            <div class="content-body">
+                <div class="button-area">
+                    <button type="button" class="btn-new" onclick="openNewOrgModal()">
+                        ＋ 新規登録
+                    </button>
+                </div>
+
+                <p>※ この画面は組織情報詳細ダイアログのデモ用の親画面です。</p>
+                <p>「新規登録」ボタンまたは下部のデモ用ボタンで組織情報詳細ダイアログを開くことができます。</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 組織情報詳細モーダル -->
+    <div class="modal fade" id="orgDetailModal" tabindex="-1" aria-labelledby="orgDetailModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="orgDetailModalLabel">
+                        <span id="titleNew">組織情報新規登録</span>
+                        <span id="titleDetail" style="display: none;">組織情報詳細</span>
+                        <span id="titleEdit" style="display: none;">組織情報編集</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 基本情報エリア -->
+                    <div class="form-section">
+                        <h4 class="section-title">基本情報</h4>
+                        
+                        <div class="row-cols">
+                            <!-- テナント組織ID -->
+                            <div class="form-group">
+                                <label for="tenantOrgId">部門コード(基軸コード)</label>
+                                <input type="text" id="tenantOrgId" class="form-control" placeholder="テナント組織IDを入力してください" maxlength="100">
+                            </div>
+
+                            <!-- 組織名称 -->
+                            <div class="form-group">
+                                <label for="orgName">組織名称</label>
+                                <input type="text" id="orgName" class="form-control" placeholder="組織名称を入力してください" maxlength="100">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- 検索基準日 -->
+                            <div class="form-group" id="searchDateGroup">
+                                <label for="searchDate">検索基準日</label>
+                                <input type="date" id="searchDate" class="form-control">
+                            </div>
+
+                            <!-- 有効開始日 -->
+                            <div class="form-group">
+                                <label for="startDate">有効開始日</label>
+                                <input type="date" id="startDate" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- 有効終了日 -->
+                            <div class="form-group">
+                                <label for="endDate">有効終了日</label>
+                                <div class="readonly-value" id="endDate">9999/12/31</div>
+                            </div>
+
+                            <!-- 最終更新媒体 -->
+                            <div class="form-group">
+                                <label for="latestMedium">最終更新媒体</label>
+                                <div class="readonly-value" id="latestMedium">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 追加情報エリア -->
+                    <div class="form-section">
+                        <h4 class="section-title">追加情報</h4>
+                        
+                        <div class="row-cols">
+                            <!-- 郵便番号 -->
+                            <div class="form-group">
+                                <label for="postalCode">郵便番号</label>
+                                <input type="text" id="postalCode" class="form-control" placeholder="例: 100-0001" maxlength="10">
+                            </div>
+
+                            <!-- 住所 -->
+                            <div class="form-group">
+                                <label for="address">住所</label>
+                                <input type="text" id="address" class="form-control" placeholder="住所を入力してください" maxlength="200">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- OBIC所属コード -->
+                            <div class="form-group">
+                                <label for="obicCode">OBIC所属コード</label>
+                                <input type="text" id="obicCode" class="form-control" placeholder="OBIC所属コードを入力してください" maxlength="50">
+                            </div>
+
+                            <!-- OBIC所属名称 -->
+                            <div class="form-group">
+                                <label for="obicName">OBIC所属名称</label>
+                                <input type="text" id="obicName" class="form-control" placeholder="OBIC所属名称を入力してください" maxlength="100">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- 電子承認所属コード -->
+                            <div class="form-group">
+                                <label for="approvalCode">電子承認所属コード</label>
+                                <input type="text" id="approvalCode" class="form-control" placeholder="電子承認所属コードを入力してください" maxlength="50">
+                            </div>
+
+                            <!-- G-SMaRT所属コード -->
+                            <div class="form-group">
+                                <label for="gsmartCode">G-SMaRT所属コード</label>
+                                <input type="text" id="gsmartCode" class="form-control" placeholder="G-SMaRT所属コードを入力してください" maxlength="50">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- EMILY所属コード -->
+                            <div class="form-group">
+                                <label for="emilyCode">EMILY所属コード</label>
+                                <input type="text" id="emilyCode" class="form-control" placeholder="EMILY所属コードを入力してください" maxlength="50">
+                            </div>
+
+                            <!-- ジョブカン部署コード -->
+                            <div class="form-group">
+                                <label for="jobkanCode">ジョブカン部署コード</label>
+                                <input type="text" id="jobkanCode" class="form-control" placeholder="ジョブカン部署コードを入力してください" maxlength="50">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- 携帯電話貸与科目 -->
+                            <div class="form-group">
+                                <label for="mobilePhoneCategory">携帯電話貸与科目</label>
+                                <input type="text" id="mobilePhoneCategory" class="form-control" placeholder="携帯電話貸与科目を入力してください" maxlength="50">
+                            </div>
+
+                            <!-- 表示順 -->
+                            <div class="form-group">
+                                <label for="displayOrder">表示順</label>
+                                <input type="number" id="displayOrder" class="form-control" placeholder="表示順を入力してください" min="0">
+                            </div>
+                        </div>
+
+                        <div class="row-cols">
+                            <!-- タクシーアプリGO使用可否 -->
+                            <div class="form-group">
+                                <label for="taxiGoEnabled">タクシーアプリGO使用可否</label>
+                                <div class="form-check">
+                                    <input type="checkbox" id="taxiGoEnabled" class="form-check-input">
+                                    <label class="form-check-label" for="taxiGoEnabled">使用可能</label>
+                                </div>
+                            </div>
+
+                            <!-- タクシーアプリS.RIDE使用可否 -->
+                            <div class="form-group">
+                                <label for="taxiSrideEnabled">タクシーアプリS.RIDE使用可否</label>
+                                <div class="form-check">
+                                    <input type="checkbox" id="taxiSrideEnabled" class="form-check-input">
+                                    <label class="form-check-label" for="taxiSrideEnabled">使用可能</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <!-- 新規登録モード用ボタン -->
+                    <div id="newModeButtons">
+                        <button type="button" class="btn btn-success" onclick="handleRegister()">登録</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    </div>
+
+                    <!-- 詳細表示モード用ボタン -->
+                    <div id="detailModeButtons" style="display: none;">
+                        <button type="button" class="btn btn-primary" id="editBtn" onclick="switchToEditMode()">編集</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                    </div>
+
+                    <!-- 編集モード用ボタン -->
+                    <div id="editModeButtons" style="display: none;">
+                        <button type="button" class="btn btn-success" onclick="handleUpdate()">更新</button>
+                        <button type="button" class="btn btn-secondary" onclick="handleCancel()">キャンセル</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- デモ用コントロール -->
+    <div class="demo-controls">
+        <h6>デモ用モード切替</h6>
+        <button type="button" class="btn btn-success btn-sm" onclick="openNewOrgModal()">新規登録モード</button>
+        <button type="button" class="btn btn-info btn-sm" onclick="openDetailOrgModal()">詳細表示モード</button>
+        <button type="button" class="btn btn-warning btn-sm" onclick="openEditOrgModal()">編集モード（直接）</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // モーダルのインスタンス
+        let orgDetailModal;
+        let currentMode = 'new'; // 'new', 'detail', 'edit'
+        let originalData = {}; // 編集前のデータを保持
+
+        // DOM読み込み完了後に実行
+        document.addEventListener('DOMContentLoaded', function() {
+            // モーダルインスタンスの取得
+            orgDetailModal = new bootstrap.Modal(document.getElementById('orgDetailModal'));
+
+            // サイドメニュー開閉
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+
+            menuToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                mainContent.classList.toggle('expanded');
+            });
+        });
+
+        // カテゴリ開閉
+        function toggleCategory(element) {
+            const isExpanded = element.classList.contains('expanded');
+            element.classList.toggle('expanded');
+            const menuItems = element.nextElementSibling;
+            menuItems.classList.toggle('show');
+        }
+
+        // 新規登録モードでモーダルを開く
+        function openNewOrgModal() {
+            currentMode = 'new';
+            
+            // タイトル切替
+            document.getElementById('titleNew').style.display = '';
+            document.getElementById('titleDetail').style.display = 'none';
+            document.getElementById('titleEdit').style.display = 'none';
+
+            // ボタン切替
+            document.getElementById('newModeButtons').style.display = '';
+            document.getElementById('detailModeButtons').style.display = 'none';
+            document.getElementById('editModeButtons').style.display = 'none';
+
+            // 検索基準日・有効終了日を非表示
+            document.getElementById('searchDateGroup').style.display = 'none';
+
+            // フォームのリセット
+            resetForm();
+
+            // 全項目を編集可能に
+            setFormEditable(true);
+
+            // モーダルを表示
+            orgDetailModal.show();
+        }
+
+        // 詳細表示モードでモーダルを開く
+        function openDetailOrgModal() {
+            currentMode = 'detail';
+            
+            // タイトル切替
+            document.getElementById('titleNew').style.display = 'none';
+            document.getElementById('titleDetail').style.display = '';
+            document.getElementById('titleEdit').style.display = 'none';
+
+            // ボタン切替
+            document.getElementById('newModeButtons').style.display = 'none';
+            document.getElementById('detailModeButtons').style.display = '';
+            document.getElementById('editModeButtons').style.display = 'none';
+
+            // 検索基準日を表示
+            document.getElementById('searchDateGroup').style.display = '';
+
+            // サンプルデータをロード
+            loadSampleData();
+
+            // 全項目を読み取り専用に
+            setFormEditable(false);
+
+            // モーダルを表示
+            orgDetailModal.show();
+        }
+
+        // 編集モードでモーダルを開く（デモ用）
+        function openEditOrgModal() {
+            currentMode = 'edit';
+            
+            // タイトル切替
+            document.getElementById('titleNew').style.display = 'none';
+            document.getElementById('titleDetail').style.display = 'none';
+            document.getElementById('titleEdit').style.display = '';
+
+            // ボタン切替
+            document.getElementById('newModeButtons').style.display = 'none';
+            document.getElementById('detailModeButtons').style.display = 'none';
+            document.getElementById('editModeButtons').style.display = '';
+
+            // 検索基準日を非表示
+            document.getElementById('searchDateGroup').style.display = 'none';
+
+            // サンプルデータをロード
+            loadSampleData();
+
+            // 編集可能な項目のみ編集可能に（有効終了日、最終更新媒体は除く）
+            setFormEditable(true, true);
+
+            // モーダルを表示
+            orgDetailModal.show();
+        }
+
+        // 詳細表示モードから編集モードに切り替え
+        function switchToEditMode() {
+            // 現在のデータを保存
+            saveCurrentData();
+
+            currentMode = 'edit';
+            
+            // タイトル切替
+            document.getElementById('titleDetail').style.display = 'none';
+            document.getElementById('titleEdit').style.display = '';
+
+            // ボタン切替
+            document.getElementById('detailModeButtons').style.display = 'none';
+            document.getElementById('editModeButtons').style.display = '';
+
+            // 検索基準日を非表示
+            document.getElementById('searchDateGroup').style.display = 'none';
+
+            // 編集可能な項目のみ編集可能に
+            setFormEditable(true, true);
+        }
+
+        // フォームのリセット
+        function resetForm() {
+            document.getElementById('tenantOrgId').value = '';
+            document.getElementById('orgName').value = '';
+            document.getElementById('searchDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById('startDate').value = '';
+            document.getElementById('endDate').textContent = '9999/12/31';
+            document.getElementById('latestMedium').textContent = '-';
+            
+            document.getElementById('postalCode').value = '';
+            document.getElementById('address').value = '';
+            document.getElementById('obicCode').value = '';
+            document.getElementById('obicName').value = '';
+            document.getElementById('approvalCode').value = '';
+            document.getElementById('gsmartCode').value = '';
+            document.getElementById('emilyCode').value = '';
+            document.getElementById('jobkanCode').value = '';
+            document.getElementById('mobilePhoneCategory').value = '';
+            document.getElementById('displayOrder').value = '';
+            document.getElementById('taxiGoEnabled').checked = false;
+            document.getElementById('taxiSrideEnabled').checked = false;
+        }
+
+        // サンプルデータをロード
+        function loadSampleData() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('tenantOrgId').value = '100000';
+            document.getElementById('orgName').value = '本社';
+            document.getElementById('searchDate').value = today;
+            document.getElementById('startDate').value = '2000-01-01';
+            document.getElementById('endDate').textContent = '9999/12/31';
+            document.getElementById('latestMedium').textContent = 'OBIC（人事システム）';
+            
+            document.getElementById('postalCode').value = '100-0001';
+            document.getElementById('address').value = '東京都千代田区千代田1-1';
+            document.getElementById('obicCode').value = 'OBIC001';
+            document.getElementById('obicName').value = '本社';
+            document.getElementById('approvalCode').value = 'APR001';
+            document.getElementById('gsmartCode').value = 'GSM001';
+            document.getElementById('emilyCode').value = 'EMI001';
+            document.getElementById('jobkanCode').value = 'JOB001';
+            document.getElementById('mobilePhoneCategory').value = '営業用';
+            document.getElementById('displayOrder').value = '1';
+            document.getElementById('taxiGoEnabled').checked = true;
+            document.getElementById('taxiSrideEnabled').checked = true;
+
+            // 元データを保存
+            saveCurrentData();
+        }
+
+        // 現在のデータを保存
+        function saveCurrentData() {
+            originalData = {
+                tenantOrgId: document.getElementById('tenantOrgId').value,
+                orgName: document.getElementById('orgName').value,
+                startDate: document.getElementById('startDate').value,
+                postalCode: document.getElementById('postalCode').value,
+                address: document.getElementById('address').value,
+                obicCode: document.getElementById('obicCode').value,
+                obicName: document.getElementById('obicName').value,
+                approvalCode: document.getElementById('approvalCode').value,
+                gsmartCode: document.getElementById('gsmartCode').value,
+                emilyCode: document.getElementById('emilyCode').value,
+                jobkanCode: document.getElementById('jobkanCode').value,
+                mobilePhoneCategory: document.getElementById('mobilePhoneCategory').value,
+                displayOrder: document.getElementById('displayOrder').value,
+                taxiGoEnabled: document.getElementById('taxiGoEnabled').checked,
+                taxiSrideEnabled: document.getElementById('taxiSrideEnabled').checked
+            };
+        }
+
+        // フォームの編集可否を設定
+        function setFormEditable(editable, isEditMode = false) {
+            const inputs = [
+                'tenantOrgId', 'orgName', 'startDate',
+                'postalCode', 'address', 'obicCode', 'obicName',
+                'approvalCode', 'gsmartCode', 'emilyCode', 'jobkanCode',
+                'mobilePhoneCategory', 'displayOrder', 'taxiGoEnabled', 'taxiSrideEnabled'
+            ];
+
+            inputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    if (editable) {
+                        element.removeAttribute('disabled');
+                        element.removeAttribute('readonly');
+                    } else {
+                        element.setAttribute('disabled', 'disabled');
+                    }
+                }
+            });
+
+            // 検索基準日は詳細表示モードのみ編集可能
+            const searchDate = document.getElementById('searchDate');
+            if (currentMode === 'detail') {
+                searchDate.removeAttribute('disabled');
+            } else {
+                searchDate.setAttribute('disabled', 'disabled');
+            }
+        }
+
+        // 登録処理
+        function handleRegister() {
+            // バリデーション（簡易版）
+            const tenantOrgId = document.getElementById('tenantOrgId').value.trim();
+            const orgName = document.getElementById('orgName').value.trim();
+            const startDate = document.getElementById('startDate').value;
+
+            if (!tenantOrgId) {
+                alert('部門コード(基軸コード)を入力してください。');
+                return;
+            }
+            if (!orgName) {
+                alert('組織名称を入力してください。');
+                return;
+            }
+            if (!startDate) {
+                alert('有効開始日を入力してください。');
+                return;
+            }
+
+            if (confirm('組織情報を登録します。よろしいですか？')) {
+                alert('組織情報を登録しました。');
+                orgDetailModal.hide();
+            }
+        }
+
+        // 更新処理
+        function handleUpdate() {
+            // バリデーション（簡易版）
+            const tenantOrgId = document.getElementById('tenantOrgId').value.trim();
+            const orgName = document.getElementById('orgName').value.trim();
+            const startDate = document.getElementById('startDate').value;
+
+            if (!tenantOrgId) {
+                alert('部門コード(基軸コード)を入力してください。');
+                return;
+            }
+            if (!orgName) {
+                alert('組織名称を入力してください。');
+                return;
+            }
+            if (!startDate) {
+                alert('有効開始日を入力してください。');
+                return;
+            }
+
+            if (confirm('組織情報を更新します。よろしいですか？')) {
+                alert('組織情報を更新しました。');
+                orgDetailModal.hide();
+            }
+        }
+
+        // キャンセル処理
+        function handleCancel() {
+            // 変更チェック（簡易版）
+            const hasChanges = checkForChanges();
+
+            if (hasChanges) {
+                if (!confirm('入力内容が変更されています。変更を破棄してよろしいですか？')) {
+                    return;
+                }
+            }
+
+            // 詳細表示モードに戻る
+            currentMode = 'detail';
+            
+            // タイトル切替
+            document.getElementById('titleEdit').style.display = 'none';
+            document.getElementById('titleDetail').style.display = '';
+
+            // ボタン切替
+            document.getElementById('editModeButtons').style.display = 'none';
+            document.getElementById('detailModeButtons').style.display = '';
+
+            // 検索基準日を表示
+            document.getElementById('searchDateGroup').style.display = '';
+
+            // 元のデータを復元
+            restoreOriginalData();
+
+            // 全項目を読み取り専用に
+            setFormEditable(false);
+        }
+
+        // 変更チェック
+        function checkForChanges() {
+            return (
+                originalData.tenantOrgId !== document.getElementById('tenantOrgId').value ||
+                originalData.orgName !== document.getElementById('orgName').value ||
+                originalData.startDate !== document.getElementById('startDate').value ||
+                originalData.postalCode !== document.getElementById('postalCode').value ||
+                originalData.address !== document.getElementById('address').value ||
+                originalData.obicCode !== document.getElementById('obicCode').value ||
+                originalData.obicName !== document.getElementById('obicName').value ||
+                originalData.approvalCode !== document.getElementById('approvalCode').value ||
+                originalData.gsmartCode !== document.getElementById('gsmartCode').value ||
+                originalData.emilyCode !== document.getElementById('emilyCode').value ||
+                originalData.jobkanCode !== document.getElementById('jobkanCode').value ||
+                originalData.mobilePhoneCategory !== document.getElementById('mobilePhoneCategory').value ||
+                originalData.displayOrder !== document.getElementById('displayOrder').value ||
+                originalData.taxiGoEnabled !== document.getElementById('taxiGoEnabled').checked ||
+                originalData.taxiSrideEnabled !== document.getElementById('taxiSrideEnabled').checked
+            );
+        }
+
+        // 元のデータを復元
+        function restoreOriginalData() {
+            document.getElementById('tenantOrgId').value = originalData.tenantOrgId;
+            document.getElementById('orgName').value = originalData.orgName;
+            document.getElementById('startDate').value = originalData.startDate;
+            document.getElementById('postalCode').value = originalData.postalCode;
+            document.getElementById('address').value = originalData.address;
+            document.getElementById('obicCode').value = originalData.obicCode;
+            document.getElementById('obicName').value = originalData.obicName;
+            document.getElementById('approvalCode').value = originalData.approvalCode;
+            document.getElementById('gsmartCode').value = originalData.gsmartCode;
+            document.getElementById('emilyCode').value = originalData.emilyCode;
+            document.getElementById('jobkanCode').value = originalData.jobkanCode;
+            document.getElementById('mobilePhoneCategory').value = originalData.mobilePhoneCategory;
+            document.getElementById('displayOrder').value = originalData.displayOrder;
+            document.getElementById('taxiGoEnabled').checked = originalData.taxiGoEnabled;
+            document.getElementById('taxiSrideEnabled').checked = originalData.taxiSrideEnabled;
+        }
+
+        // 検索基準日変更イベント（詳細表示モード）
+        document.getElementById('searchDate').addEventListener('change', function() {
+            if (currentMode === 'detail') {
+                // 本来はここで指定された基準日のデータを再取得する
+                alert('検索基準日: ' + this.value + ' のデータを取得します（デモでは未実装）');
+            }
+        });
+    </script>
+</body>
+</html>

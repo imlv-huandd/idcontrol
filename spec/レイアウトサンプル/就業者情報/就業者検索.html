@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>就業者検索 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 60px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 90;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .menu-category {
+            margin-bottom: 5px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-icon {
+            transition: transform 0.2s;
+        }
+
+        .category-header.expanded .category-icon {
+            transform: rotate(90deg);
+        }
+
+        .menu-items {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-items.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .menu-item a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+        }
+
+        .main-content {
+            margin-top: 60px;
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .content-subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .search-card,
+        .result-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            color: #34495e;
+            font-weight: 600;
+        }
+
+        .form-control,
+        .form-select {
+            font-size: 13px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .result-card .btn-outline-primary {
+            color: #fff;
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+        }
+
+        .result-card .btn-outline-danger {
+            color: #fff;
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .result-card .btn-outline-secondary {
+            color: #fff;
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+
+        .table thead th {
+            background-color: #f4f6f8;
+            font-size: 12px;
+            color: #2c3e50;
+            vertical-align: middle;
+        }
+
+        .table tbody td {
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .badge-retired {
+            background-color: #f39c12;
+            color: white;
+        }
+
+        .pagination-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .page-size {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .page-size select {
+            width: 80px;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-280px);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-button" id="toggleSidebar" aria-label="メニュー">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <span class="system-name">ID管理システム</span>
+            </div>
+            <div class="header-right">
+                <span class="user-name">管理者 太郎</span>
+                <button class="icon-button" aria-label="ログアウト">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="system-name">メニュー</div>
+            </div>
+            <ul class="menu-list">
+                <li class="menu-category">
+                    <div class="category-header expanded">
+                        <span class="category-name">就業者情報</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <div class="menu-items show">
+                        <div class="menu-item active"><a href="#">就業者検索</a></div>
+                    </div>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header">
+                        <span class="category-name">組織情報</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <div class="menu-items">
+                        <div class="menu-item"><a href="#">組織検索</a></div>
+                        <div class="menu-item"><a href="#">役職検索</a></div>
+                    </div>
+                </li>
+                <li class="menu-category">
+                    <div class="category-header">
+                        <span class="category-name">権限管理</span>
+                        <span class="category-icon">▶</span>
+                    </div>
+                    <div class="menu-items">
+                        <div class="menu-item"><a href="#">ユーザー権限検索</a></div>
+                        <div class="menu-item"><a href="#">グループ権限検索</a></div>
+                    </div>
+                </li>
+            </ul>
+        </aside>
+
+        <main class="main-content" id="mainContent">
+            <div class="content-header">
+                <div class="content-title">就業者検索</div>
+                <div class="content-subtitle"></div>
+            </div>
+
+            <section class="search-card">
+                <div class="section-title">検索条件</div>
+                <div class="row g-3">
+                    <div class="col-lg-4">
+                        <label class="form-label">マンナンバー</label>
+                        <input type="text" class="form-control" placeholder="部分一致で検索">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label">姓</label>
+                        <input type="text" class="form-control" placeholder="部分一致で検索">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label">名</label>
+                        <input type="text" class="form-control" placeholder="部分一致で検索">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label">基準日</label>
+                        <input type="date" class="form-control" value="yyyy/mm/dd">
+                    </div>
+                    <div class="col-lg-4">
+                        <label class="form-label">退職含む</label>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="checkbox" id="includeRetired" checked>
+                            <label class="form-check-label" for="includeRetired">退職済みを含める</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="action-buttons mt-4">
+                    <button class="btn btn-success">
+                        <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-1" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        新規登録
+                    </button>
+                    <button class="btn btn-secondary ms-auto">
+                        <svg width="16" height="16" fill="currentColor" class="bi bi-x-circle me-1" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                        </svg>
+                        クリア
+                    </button>
+                    <button class="btn btn-primary">
+                        <svg width="16" height="16" fill="currentColor" class="bi bi-search me-1" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                        </svg>
+                        検索
+                    </button>
+                    <button class="btn btn-outline-success">
+                        <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        CSV出力
+                    </button>
+                </div>
+            </section>
+
+            <section class="result-card">
+                <div class="section-title">検索結果</div>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th>マンナンバー</th>
+                                <th>氏名</th>
+                                <th>基準日</th>
+                                <th>退職日</th>
+                                <th>退職済</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>123456</td>
+                                <td>福沢　諭吉</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123457</td>
+                                <td>野口　英世</td>
+                                <td>2025/12/31</td>
+                                <td>2025/12/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123458</td>
+                                <td>山田　花子</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123459</td>
+                                <td>佐藤　健</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123460</td>
+                                <td>鈴木　優子</td>
+                                <td>2024/03/31</td>
+                                <td>2024/03/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123461</td>
+                                <td>高橋　誠</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123462</td>
+                                <td>伊藤　由美</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123463</td>
+                                <td>渡辺　大輔</td>
+                                <td>2025/06/30</td>
+                                <td>2025/06/30</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123464</td>
+                                <td>小林　美咲</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123465</td>
+                                <td>加藤　直樹</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123466</td>
+                                <td>山本　智子</td>
+                                <td>2023/09/30</td>
+                                <td>2023/09/30</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123467</td>
+                                <td>中村　俊介</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123468</td>
+                                <td>森　彩香</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123469</td>
+                                <td>石井　浩二</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123470</td>
+                                <td>斎藤　理恵</td>
+                                <td>2022/12/31</td>
+                                <td>2022/12/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123471</td>
+                                <td>井上　拓真</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123472</td>
+                                <td>木村　里奈</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123473</td>
+                                <td>林　亮介</td>
+                                <td>2021/03/31</td>
+                                <td>2021/03/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123474</td>
+                                <td>清水　真由</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123475</td>
+                                <td>松本　悠斗</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123476</td>
+                                <td>竹内　香織</td>
+                                <td>2020/07/31</td>
+                                <td>2020/07/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123477</td>
+                                <td>和田　翔</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123478</td>
+                                <td>金子　千尋</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123479</td>
+                                <td>藤田　健太</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123480</td>
+                                <td>三浦　奈央</td>
+                                <td>2019/03/31</td>
+                                <td>2019/03/31</td>
+                                <td>退職</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-secondary" disabled>退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123481</td>
+                                <td>岡田　美月</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123482</td>
+                                <td>西村　悠希</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>123483</td>
+                                <td>森田　涼</td>
+                                <td>2026/01/09</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary">詳細</button>
+                                    <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#retireModal">退職</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-wrapper">
+                    <div class="page-size">
+                        表示件数
+                        <select class="form-select form-select-sm">
+                            <option selected>10</option>
+                            <option>20</option>
+                            <option>50</option>
+                        </select>
+                    </div>
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item disabled"><a class="page-link" href="#">前へ</a></li>
+                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#">次へ</a></li>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal fade" id="retireModal" tabindex="-1" aria-labelledby="retireModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="retireModalLabel">退職確認</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <div class="form-label">マンナンバー</div>
+                        <div class="fw-semibold">123456</div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-label">氏名</div>
+                        <div class="fw-semibold">福沢　諭吉</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">退職日</label>
+                        <input type="date" class="form-control" value="2026-01-31">
+                    </div>
+                    <div class="text-muted" style="font-size: 12px;">この就業者を入力日で退職とします。</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-danger">退職実行</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toggleSidebar = document.getElementById('toggleSidebar');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        toggleSidebar.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        document.querySelectorAll('.category-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('expanded');
+                const menuItems = header.nextElementSibling;
+                if (menuItems) {
+                    menuItems.classList.toggle('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

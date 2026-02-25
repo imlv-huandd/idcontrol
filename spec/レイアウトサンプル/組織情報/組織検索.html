@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>組織検索 - ID管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* ヘッダー */
+        .header {
+            position: fixed;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: 60px;
+            background-color: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .icon-button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .icon-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .icon-button svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #ecf0f1;
+        }
+
+        /* サイドメニュー */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 60px);
+            background-color: #34495e;
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 90;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-280px);
+        }
+
+        .sidebar-header {
+            padding: 30px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .system-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ecf0f1;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 10px 0;
+        }
+
+        .menu-category {
+            margin-bottom: 5px;
+        }
+
+        .category-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background-color 0.2s;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .category-icon {
+            transition: transform 0.2s;
+        }
+
+        .category-header.expanded .category-icon {
+            transform: rotate(90deg);
+        }
+
+        .menu-items {
+            display: none;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-items.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #3498db;
+        }
+
+        .menu-item.active {
+            background-color: rgba(52, 152, 219, 0.2);
+            border-left-color: #3498db;
+        }
+
+        .menu-item a {
+            color: #bdc3c7;
+            text-decoration: none;
+            display: block;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            margin-top: 60px;
+            margin-left: 280px;
+            padding: 30px;
+            flex: 1;
+            overflow-y: auto;
+            background-color: #ecf0f1;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-header {
+            margin-bottom: 20px;
+        }
+
+        .content-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .content-description {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .content-body {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        /* 検索条件エリア */
+        .search-area {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .search-area h5 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 検索結果エリア */
+        .result-area {
+            display: none;
+        }
+
+        .result-area.show {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .result-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .table-responsive {
+            margin-bottom: 20px;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons .btn {
+            padding: 4px 12px;
+            font-size: 13px;
+        }
+
+        .badge-abolished {
+            background-color: #dc3545;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* ページネーション */
+        .pagination-area {
+            display: none;
+        }
+
+        .pagination-area.show {
+            display: flex;
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-size-selector {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-size-selector select {
+            width: 80px;
+        }
+
+        /* スクロールバーのスタイル */
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <div class="header-left">
+                <button class="icon-button" id="menuToggle" title="メニュー表示切替">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="header-right">
+                <button class="icon-button" id="fullscreenToggle" title="全画面切替">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
+                <div class="user-name" id="headerUserName">サンプル管理者</div>
+            </div>
+        </header>
+
+        <!-- サイドメニュー -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="system-name">ID管理システム</div>
+            </div>
+            <ul class="menu-list" id="menuList">
+                <!-- メニューはJavaScriptで動的に生成 -->
+            </ul>
+        </aside>
+
+        <!-- メインコンテンツ -->
+        <main class="main-content" id="mainContent">
+            <div class="content-header">
+                <h1 class="content-title">組織検索</h1>
+            </div>
+            <div class="content-body">
+                <!-- 検索条件エリア -->
+                <div class="search-area">
+                    <h5>検索条件</h5>
+                    <form id="searchForm">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="tenantOrgId" class="form-label">部門コード(基軸コード)</label>
+                                <input type="text" class="form-control" id="tenantOrgId" placeholder="部分一致で検索">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="orgName" class="form-label">組織名称</label>
+                                <input type="text" class="form-control" id="orgName" placeholder="部分一致で検索">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="searchDate" class="form-label">検索基準日</label>
+                                <input type="text" class="form-control" id="searchDate" placeholder="yyyy/mm/dd">
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="includeAbolished">
+                                    <label class="form-check-label" for="includeAbolished">
+                                        廃止済を含む
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 d-flex gap-2">
+                            <button type="button" class="btn btn-success" id="newOrgBtn">
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-plus-circle me-1" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                </svg>
+                                新規登録
+                            </button>
+                            <button type="button" class="btn btn-secondary ms-auto" id="clearBtn">
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-x-circle me-1" viewBox="0 0 16 16">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                                クリア
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-search me-1" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                                検索
+                            </button>
+                            <button type="button" class="btn btn-outline-success" id="csvExportBtn">
+                                <svg width="16" height="16" fill="currentColor" class="bi bi-download me-1" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                                </svg>
+                                CSV出力
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- 検索結果エリア -->
+                <div class="result-area" id="resultArea">
+                    <div class="result-header">
+                        <span class="result-count" id="resultCount">検索結果：0件</span>
+                        <!-- ページネーション -->
+                        <div class="pagination-area" id="paginationArea">
+                            <nav aria-label="ページネーション">
+                                <ul class="pagination mb-0" id="pagination">
+                                    <!-- ページネーションがここに表示されます -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>部門コード(基軸コード)</th>
+                                    <th>組織名称</th>
+                                    <th>有効開始日</th>
+                                    <th>有効終了日</th>
+                                    <th>廃止済</th>
+                                    <th style="width: 180px;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orgTableBody">
+                                <!-- 検索結果がここに表示されます -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 廃止確認モーダル -->
+    <div class="modal fade" id="abolishModal" tabindex="-1" aria-labelledby="abolishModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="abolishModalLabel">廃止確認</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="閉じる"></button>
+                </div>
+                <div class="modal-body">
+                    <p>以下の組織を廃止します。よろしいですか？</p>
+                    <div class="mt-2">
+                        <div><strong>部門コード(基軸コード): <span id="abolishTargetOrgId"></span></strong></div>
+                        <div><strong>組織名称: <span id="abolishTargetOrgName"></span></strong></div>
+                    </div>
+                    <div class="mt-3">
+                        <label for="abolishDate" class="form-label">廃止日 <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="abolishDate" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-danger" id="confirmAbolishBtn">廃止</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // DOM読み込み完了後に実行
+        document.addEventListener('DOMContentLoaded', function() {
+        
+        // サンプルデータ
+        const sampleOrgs = [
+            { orgId: '1', tenantOrgId: '100000', orgName: '本社', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '2', tenantOrgId: '110000', orgName: '営業本部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '3', tenantOrgId: '111000', orgName: '営業第一部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '4', tenantOrgId: '111100', orgName: '営業第一課', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '5', tenantOrgId: '112000', orgName: '営業第二部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '6', tenantOrgId: '112100', orgName: '営業第二課', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '7', tenantOrgId: '120000', orgName: '総務本部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '8', tenantOrgId: '121000', orgName: '総務部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '9', tenantOrgId: '122000', orgName: '人事部', startDate: '2000/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '16', tenantOrgId: '150000', orgName: '名古屋支社', startDate: '2010/04/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '17', tenantOrgId: '151000', orgName: '名古屋営業部', startDate: '2010/04/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '18', tenantOrgId: '160000', orgName: '福岡支社', startDate: '2015/04/01', endDate: '2023/03/31', isAbolished: true },
+            { orgId: '19', tenantOrgId: '161000', orgName: '福岡営業部', startDate: '2015/04/01', endDate: '2023/03/31', isAbolished: true },
+            { orgId: '20', tenantOrgId: '170000', orgName: '札幌支社', startDate: '2018/04/01', endDate: '2024/12/31', isAbolished: true },
+            { orgId: '21', tenantOrgId: '180000', orgName: '技術本部', startDate: '2020/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '22', tenantOrgId: '181000', orgName: '品質管理部', startDate: '2020/01/01', endDate: '9999/12/31', isAbolished: false },
+            { orgId: '23', tenantOrgId: '182000', orgName: '技術サポート部', startDate: '2020/01/01', endDate: '9999/12/31', isAbolished: false },
+        ];
+
+        let currentPage = 1;
+        let pageSize = 20;
+        let filteredOrgs = [];
+        let abolishTargetOrgId = null;
+        let orgTreeVersion = 'v1.0.0'; // サンプルバージョン
+
+        // メニューデータ
+        const menuData = [
+            {
+                category: 'ユーザー管理',
+                items: ['ユーザー検索', 'ユーザー編集']
+            },
+            {
+                category: 'グループ管理',
+                items: ['グループ検索', 'グループ編集']
+            },
+            {
+                category: '組織情報',
+                items: ['組織検索', '役職検索']
+            },
+            {
+                category: '権限管理',
+                items: ['ユーザー権限設定', 'グループ権限設定']
+            },
+            {
+                category: '連携システム',
+                items: ['連携システム一覧', '連携元インターフェイス', '連携先インターフェイス']
+            },
+            {
+                category: 'コード定義',
+                items: ['コードグループ検索', 'コード変換グループ検索']
+            },
+            {
+                category: '管理機能',
+                items: ['連携実行履歴', '操作ログ']
+            }
+        ];
+
+        // メニューの生成
+        function generateMenu() {
+            const menuList = document.getElementById('menuList');
+            menuList.innerHTML = '';
+
+            menuData.forEach((menu, index) => {
+                const categoryLi = document.createElement('li');
+                categoryLi.className = 'menu-category';
+
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                if (menu.category === '組織情報') {
+                    categoryHeader.className += ' expanded';
+                }
+                categoryHeader.innerHTML = `
+                    <span class="category-name">${menu.category}</span>
+                    <span class="category-icon">▶</span>
+                `;
+
+                const menuItems = document.createElement('div');
+                menuItems.className = 'menu-items';
+                if (menu.category === '組織情報') {
+                    menuItems.className += ' show';
+                }
+
+                menu.items.forEach(item => {
+                    const menuItem = document.createElement('div');
+                    menuItem.className = 'menu-item';
+                    if (item === '組織検索') {
+                        menuItem.className += ' active';
+                    }
+                    menuItem.innerHTML = `<a href="#${item}">${item}</a>`;
+                    menuItems.appendChild(menuItem);
+                });
+
+                categoryHeader.addEventListener('click', function() {
+                    this.classList.toggle('expanded');
+                    menuItems.classList.toggle('show');
+                });
+
+                categoryLi.appendChild(categoryHeader);
+                categoryLi.appendChild(menuItems);
+                menuList.appendChild(categoryLi);
+            });
+        }
+
+        // メニュー表示切替
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        });
+
+        // 全画面切替
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        fullscreenToggle.addEventListener('click', function() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log('全画面表示に失敗しました:', err);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        });
+
+        // 検索処理
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            performSearch();
+        });
+
+        function performSearch() {
+            const tenantOrgIdInput = document.getElementById('tenantOrgId');
+            const orgNameInput = document.getElementById('orgName');
+            const searchDateInput = document.getElementById('searchDate');
+            const includeAbolishedInput = document.getElementById('includeAbolished');
+            
+            const tenantOrgId = tenantOrgIdInput ? tenantOrgIdInput.value.trim() : '';
+            const orgName = orgNameInput ? orgNameInput.value.trim() : '';
+            const searchDate = searchDateInput ? searchDateInput.value : '';
+            const includeAbolished = includeAbolishedInput ? includeAbolishedInput.checked : false;
+
+            // 検索実行
+            filteredOrgs = sampleOrgs.filter(org => {
+                const matchOrgId = !tenantOrgId || org.tenantOrgId.includes(tenantOrgId);
+                const matchOrgName = !orgName || org.orgName.includes(orgName);
+                
+                // 検索基準日のチェック（簡易実装）
+                let matchDate = true;
+                if (searchDate) {
+                    const searchDateObj = new Date(searchDate);
+                    const startDateObj = new Date(org.startDate);
+                    const endDateObj = org.endDate === '9999/12/31' ? new Date('9999/12/31') : new Date(org.endDate);
+                    matchDate = startDateObj <= searchDateObj && searchDateObj <= endDateObj;
+                }
+
+                // 廃止済を含むかどうか
+                const matchAbolished = includeAbolished || !org.isAbolished;
+
+                return matchOrgId && matchOrgName && matchDate && matchAbolished;
+            });
+
+            // テナント組織ID昇順でソート
+            filteredOrgs.sort((a, b) => a.tenantOrgId.localeCompare(b.tenantOrgId));
+
+            currentPage = 1;
+            displayResults();
+        }
+
+        function displayResults() {
+            const resultArea = document.getElementById('resultArea');
+            const resultCount = document.getElementById('resultCount');
+            const paginationArea = document.getElementById('paginationArea');
+
+            if (filteredOrgs.length === 0) {
+                alert('該当データがありません。');
+                resultArea.classList.remove('show');
+                paginationArea.classList.remove('show');
+                return;
+            }
+
+            resultArea.classList.add('show');
+            
+            // 表示範囲を計算
+            const startIndex = (currentPage - 1) * pageSize + 1;
+            const endIndex = Math.min(currentPage * pageSize, filteredOrgs.length);
+            resultCount.textContent = `${filteredOrgs.length}件（${startIndex}件目～${endIndex}件目を表示中）`;
+
+            // ページネーション表示判定（20件以下の場合は非表示）
+            if (filteredOrgs.length > 20) {
+                paginationArea.classList.add('show');
+            } else {
+                paginationArea.classList.remove('show');
+            }
+
+            displayPage();
+            updatePagination();
+        }
+
+        function displayPage() {
+            const tbody = document.getElementById('orgTableBody');
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, filteredOrgs.length);
+            const pageOrgs = filteredOrgs.slice(startIndex, endIndex);
+
+            tbody.innerHTML = '';
+            pageOrgs.forEach(org => {
+                const row = document.createElement('tr');
+                const endDateDisplay = org.endDate === '9999/12/31' ? '' : org.endDate;
+                const abolishedBadge = org.isAbolished ? '廃止' : '';
+                const abolishBtnDisabled = org.isAbolished ? 'disabled' : '';
+                
+                row.innerHTML = `
+                    <td>${escapeHtml(org.tenantOrgId)}</td>
+                    <td>${escapeHtml(org.orgName)}</td>
+                    <td>${org.startDate}</td>
+                    <td>${endDateDisplay}</td>
+                    <td>${abolishedBadge}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-primary detail-btn" data-org-id="${org.orgId}" data-search-date="${document.getElementById('searchDate').value || ''}">詳細</button>
+                            <button class="btn btn-sm btn-danger abolish-btn" data-org-id="${org.orgId}" data-tenant-org-id="${escapeHtml(org.tenantOrgId)}" data-org-name="${escapeHtml(org.orgName)}" ${abolishBtnDisabled}>廃止</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // 詳細ボタンのイベント
+            document.querySelectorAll('.detail-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const orgId = this.getAttribute('data-org-id');
+                    const searchDate = this.getAttribute('data-search-date');
+                    alert(`組織情報詳細画面に遷移します（組織ID: ${orgId}, 検索基準日: ${searchDate || '未指定'}）`);
+                });
+            });
+
+            // 廃止ボタンのイベント
+            document.querySelectorAll('.abolish-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.disabled) return;
+                    
+                    const orgId = this.getAttribute('data-org-id');
+                    const tenantOrgId = this.getAttribute('data-tenant-org-id');
+                    const orgName = this.getAttribute('data-org-name');
+
+                    abolishTargetOrgId = orgId;
+                    document.getElementById('abolishTargetOrgId').textContent = tenantOrgId;
+                    document.getElementById('abolishTargetOrgName').textContent = orgName;
+                    
+                    // 廃止日の初期値を今日に設定
+                    const today = new Date().toISOString().split('T')[0];
+                    document.getElementById('abolishDate').value = today;
+                    
+                    const abolishModal = new bootstrap.Modal(document.getElementById('abolishModal'));
+                    abolishModal.show();
+                });
+            });
+        }
+
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const totalPages = Math.ceil(filteredOrgs.length / pageSize);
+
+            pagination.innerHTML = '';
+
+            // 先頭ページボタン
+            const firstLi = document.createElement('li');
+            firstLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            firstLi.innerHTML = `<a class="page-link" href="#" data-page="first">«</a>`;
+            pagination.appendChild(firstLi);
+
+            // 前ページボタン
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+            prevLi.innerHTML = `<a class="page-link" href="#" data-page="prev">‹</a>`;
+            pagination.appendChild(prevLi);
+
+            // ページ番号の表示範囲を計算（最大5ページ）
+            let startPage, endPage;
+            if (totalPages <= 5) {
+                startPage = 1;
+                endPage = totalPages;
+            } else if (currentPage <= 3) {
+                startPage = 1;
+                endPage = 5;
+            } else if (currentPage >= totalPages - 2) {
+                startPage = totalPages - 4;
+                endPage = totalPages;
+            } else {
+                startPage = currentPage - 2;
+                endPage = currentPage + 2;
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+                pagination.appendChild(li);
+            }
+
+            // 次ページボタン
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            nextLi.innerHTML = `<a class="page-link" href="#" data-page="next">›</a>`;
+            pagination.appendChild(nextLi);
+
+            // 最終ページボタン
+            const lastLi = document.createElement('li');
+            lastLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+            lastLi.innerHTML = `<a class="page-link" href="#" data-page="last">»</a>`;
+            pagination.appendChild(lastLi);
+
+            // ページネーションのイベント
+            pagination.querySelectorAll('a.page-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    
+                    if (page === 'first') {
+                        currentPage = 1;
+                    } else if (page === 'prev') {
+                        currentPage = Math.max(1, currentPage - 1);
+                    } else if (page === 'next') {
+                        currentPage = Math.min(totalPages, currentPage + 1);
+                    } else if (page === 'last') {
+                        currentPage = totalPages;
+                    } else {
+                        currentPage = parseInt(page);
+                    }
+                    
+                    displayPage();
+                    updatePagination();
+                    
+                    // 表示範囲を更新
+                    const resultCount = document.getElementById('resultCount');
+                    const startIndex = (currentPage - 1) * pageSize + 1;
+                    const endIndex = Math.min(currentPage * pageSize, filteredOrgs.length);
+                    resultCount.textContent = `${filteredOrgs.length}件（${startIndex}件目～${endIndex}件目を表示中）`;
+                });
+            });
+        }
+
+        // クリアボタン
+        document.getElementById('clearBtn').addEventListener('click', function() {
+            document.getElementById('searchForm').reset();
+            document.getElementById('resultArea').classList.remove('show');
+            document.getElementById('paginationArea').classList.remove('show');
+            filteredOrgs = [];
+        });
+
+        // 新規登録ボタン
+        document.getElementById('newOrgBtn').addEventListener('click', function() {
+            alert('組織情報詳細画面に遷移します（新規登録モード）');
+        });
+
+        // CSV出力ボタン
+        document.getElementById('csvExportBtn').addEventListener('click', function() {
+            // 権限チェック（サンプルなのでスキップ）
+            
+            if (filteredOrgs.length === 0) {
+                alert('検索を実行してから出力してください。');
+                return;
+            }
+            
+            // CSV生成（簡易実装）
+            let csv = '"部門コード(基軸コード)","組織名称","有効開始日","有効終了日","廃止"\n';
+            filteredOrgs.forEach(org => {
+                const endDateDisplay = org.endDate === '9999/12/31' ? '' : org.endDate;
+                const abolishedText = org.isAbolished ? '廃止' : '';
+                csv += `"${org.tenantOrgId}","${org.orgName}","${org.startDate}","${endDateDisplay}","${abolishedText}"\n`;
+            });
+            
+            // ダウンロード
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `組織情報_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // 廃止確認
+        document.getElementById('confirmAbolishBtn').addEventListener('click', function() {
+            const abolishDate = document.getElementById('abolishDate').value;
+            
+            if (!abolishDate) {
+                alert('廃止日を入力してください。');
+                return;
+            }
+            
+            if (abolishTargetOrgId) {
+                // サーバー側での廃止処理（実際の実装ではAPI呼び出し）
+                // バージョンチェックなども含む
+                
+                // 廃止実行
+                const orgIndex = filteredOrgs.findIndex(org => org.orgId === abolishTargetOrgId);
+                if (orgIndex !== -1) {
+                    filteredOrgs[orgIndex].isAbolished = true;
+                    filteredOrgs[orgIndex].endDate = abolishDate.replace(/-/g, '/');
+                }
+                
+                const sampleOrgIndex = sampleOrgs.findIndex(org => org.orgId === abolishTargetOrgId);
+                if (sampleOrgIndex !== -1) {
+                    sampleOrgs[sampleOrgIndex].isAbolished = true;
+                    sampleOrgs[sampleOrgIndex].endDate = abolishDate.replace(/-/g, '/');
+                }
+                
+                // モーダルを閉じる
+                const abolishModal = bootstrap.Modal.getInstance(document.getElementById('abolishModal'));
+                abolishModal.hide();
+                
+                // 廃止完了メッセージ
+                alert('組織を廃止しました。');
+                
+                // 再表示
+                displayResults();
+                
+                abolishTargetOrgId = null;
+            }
+        });
+
+        // HTMLエスケープ関数
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return String(text).replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 初期化
+        generateMenu();
+        
+        }); // DOMContentLoaded終了
+    </script>
+</body>
+</html>
